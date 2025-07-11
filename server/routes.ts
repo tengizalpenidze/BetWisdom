@@ -107,11 +107,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { homeTeamId, awayTeamId, season = 2022 } = matchAnalysisRequestSchema.parse(req.body);
 
-      // Fetch team statistics and head-to-head data using Sportmonks API
-      const [homeTeamData, awayTeamData, h2hData] = await Promise.all([
-        callSportmonks(`/teams/${homeTeamId}`),
-        callSportmonks(`/teams/${awayTeamId}`),
-        callSportmonks(`/fixtures/head-to-head/${homeTeamId}/${awayTeamId}`)
+      // Fetch team statistics, standings, and head-to-head data using Sportmonks API with enhanced includes
+      const [homeTeamData, awayTeamData, h2hData, standingsData] = await Promise.all([
+        callSportmonks(`/teams/${homeTeamId}`, {
+          include: "statistics"
+        }),
+        callSportmonks(`/teams/${awayTeamId}`, {
+          include: "statistics"  
+        }),
+        callSportmonks(`/fixtures/head-to-head/${homeTeamId}/${awayTeamId}`, {
+          include: "participants,scores"
+        }),
+        callSportmonks(`/standings`, {
+          filters: `leagueIds:501`
+        })
       ]);
 
       // Store in local storage for caching (adapt for Sportmonks data structure)
@@ -133,10 +142,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Find current league positions for both teams
+      const homeTeamStanding = standingsData?.data?.find(s => s.participant_id === homeTeamId);
+      const awayTeamStanding = standingsData?.data?.find(s => s.participant_id === awayTeamId);
+
       res.json({
-        homeTeam: homeTeamData.data || null,
-        awayTeam: awayTeamData.data || null,
-        headToHead: h2hData.data || []
+        homeTeam: {
+          ...homeTeamData.data || null,
+          standing: homeTeamStanding || null
+        },
+        awayTeam: {
+          ...awayTeamData.data || null,
+          standing: awayTeamStanding || null
+        },
+        headToHead: h2hData.data || [],
+        leagueStandings: standingsData?.data?.filter(s => 
+          s.league_id === 501 && [homeTeamId, awayTeamId].includes(s.participant_id)
+        ) || []
       });
     } catch (error) {
       console.error("Analysis error:", error);
