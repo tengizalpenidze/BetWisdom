@@ -112,3 +112,25 @@ The application uses PostgreSQL with the following main tables:
 - Push-based deployment with `db:push` command for schema updates
 
 The application follows a modern full-stack architecture with clear separation of concerns, type safety throughout, and scalable database design for handling football analytics data.
+
+## Deployment Configuration
+
+### Render Deployment Ready
+The application is configured for deployment on Render.com with:
+- **render.yaml**: Blueprint configuration for automated deployment
+- **Dockerfile**: Docker containerization support 
+- **Production build**: Optimized build process with Vite + esbuild
+- **Environment variables**: Configured for SPORTMONKS_API_KEY and NODE_ENV
+- **Static file serving**: Express serves both API and frontend from single service
+
+### Build Process
+- Frontend: `vite build` → `dist/public/` (static assets)
+- Backend: `esbuild` → `dist/index.js` (bundled server)
+- Start: `npm start` → runs production server on port 5000
+
+### Deployment Instructions
+Complete deployment guide available in `RENDER_DEPLOYMENT.md` including:
+- Step-by-step Render setup
+- Environment variable configuration
+- Troubleshooting common issues
+- Post-deployment testing procedures
