@@ -7,7 +7,7 @@ This is a full-stack football analytics web application that provides match anal
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-API Key: Using API-Football.com with key 9f9f63cf6fc1f84236ef09a7ba2a8982 (Free plan with limitations)
+API Key: Using Sportmonks API with key b7irXCpVJbP1f0aUdqqaTkdZ23ciP1CIyyQr2TxC1J3PSTFfIU9l0dCV5FBS (Free plan with limitations)
 
 ## System Architecture
 
@@ -56,12 +56,12 @@ The application uses PostgreSQL with the following main tables:
 ## External Dependencies
 
 ### Third-Party Services
-- **API-Football**: Primary data source for football statistics and match information
-  - Using Free plan (100 requests/day)
-  - Limited date access (2025-07-10 to 2025-07-12)
-  - URL: https://v3.football.api-sports.io/
-  - Header: x-apisports-key
-  - Restricted to Premier League (league ID: 39) for most endpoints
+- **Sportmonks API**: Primary data source for football statistics and match information
+  - Using Free plan (3000 requests/day)
+  - Basic team data and head-to-head fixtures available
+  - URL: https://api.sportmonks.com/v3/football/
+  - Query parameter: api_token
+  - Scottish teams (Celtic, Rangers) and fixtures available
 - **Neon Database**: Serverless PostgreSQL hosting
 
 ### Key Libraries

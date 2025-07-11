@@ -109,15 +109,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Fetch team statistics and head-to-head data using Sportmonks API
       const [homeTeamData, awayTeamData, h2hData] = await Promise.all([
-        callSportmonks(`/teams/${homeTeamId}`, {
-          include: "statistics"
-        }),
-        callSportmonks(`/teams/${awayTeamId}`, {
-          include: "statistics"
-        }),
-        callSportmonks(`/fixtures/head-to-head/${homeTeamId}/${awayTeamId}`, {
-          include: "scores,participants,statistics"
-        })
+        callSportmonks(`/teams/${homeTeamId}`),
+        callSportmonks(`/teams/${awayTeamId}`),
+        callSportmonks(`/fixtures/head-to-head/${homeTeamId}/${awayTeamId}`)
       ]);
 
       // Store in local storage for caching (adapt for Sportmonks data structure)

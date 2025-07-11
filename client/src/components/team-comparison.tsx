@@ -21,35 +21,25 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
     );
   }
 
-  // Calculate head-to-head stats
+  // Calculate head-to-head stats - Sportmonks format
   const h2hStats = headToHead.reduce((acc, match) => {
-    // Safety check for match structure
-    if (!match?.teams?.home?.team?.id || !match?.goals || !homeTeam?.team?.id) {
+    // Sportmonks API returns simpler fixture data
+    if (!match?.id || !match?.result_info || !homeTeam?.id) {
       return acc;
     }
     
-    if (match.teams.home.team.id === homeTeam.team.id) {
-      if (match.goals.home > match.goals.away) acc.homeWins++;
-      else if (match.goals.home < match.goals.away) acc.awayWins++;
-      else acc.draws++;
-    } else {
-      if (match.goals.away > match.goals.home) acc.homeWins++;
-      else if (match.goals.away < match.goals.home) acc.awayWins++;
-      else acc.draws++;
+    // Parse result info to determine winner
+    if (match.result_info.includes(homeTeam.name)) {
+      acc.homeWins++;
+    } else if (match.result_info.includes(awayTeam.name)) {
+      acc.awayWins++;
+    } else if (match.result_info.includes('Draw')) {
+      acc.draws++;
     }
     return acc;
   }, { homeWins: 0, awayWins: 0, draws: 0 });
 
-  // Calculate total yellow/red cards with safety checks
-  const getCardTotal = (cards: any) => {
-    if (!cards || typeof cards !== 'object') return 0;
-    return Object.values(cards).reduce((total: number, period: any) => total + (period?.total || 0), 0);
-  };
 
-  const homeYellowCards = getCardTotal(homeTeam?.cards?.yellow);
-  const awayYellowCards = getCardTotal(awayTeam?.cards?.yellow);
-  const homeRedCards = getCardTotal(homeTeam?.cards?.red);
-  const awayRedCards = getCardTotal(awayTeam?.cards?.red);
 
   return (
     <div className="space-y-6">
@@ -67,10 +57,10 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
           {/* Team Headers */}
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="text-center">
-              {homeTeam?.team?.logo ? (
+              {homeTeam?.image_path ? (
                 <img 
-                  src={homeTeam.team.logo} 
-                  alt={homeTeam.team.name || 'Home Team'}
+                  src={homeTeam.image_path} 
+                  alt={homeTeam.name || 'Home Team'}
                   className="w-20 h-20 rounded-full object-contain mx-auto mb-3"
                 />
               ) : (
@@ -78,37 +68,20 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                   <Shield className="text-blue-600 text-2xl" />
                 </div>
               )}
-              <h4 className="text-xl font-bold text-gray-900">{homeTeam?.team?.name || 'Home Team'}</h4>
+              <h4 className="text-xl font-bold text-gray-900">{homeTeam?.name || 'Home Team'}</h4>
               <div className="text-sm">
-                <span className="text-gray-500">Recent Form: </span>
-                {homeTeam?.form ? (
-                  <div className="inline-flex space-x-1">
-                    {homeTeam.form.slice(-5).split('').map((result, idx) => (
-                      <span 
-                        key={idx}
-                        className={`w-6 h-6 rounded-full text-white text-xs flex items-center justify-center ${
-                          result === 'W' ? 'bg-green-500' : 
-                          result === 'L' ? 'bg-red-500' : 
-                          'bg-gray-400'
-                        }`}
-                      >
-                        {result}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-gray-400">N/A</span>
-                )}
+                <span className="text-gray-500">Founded: </span>
+                <span className="text-gray-900">{homeTeam?.founded || 'Unknown'}</span>
               </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-4xl font-bold text-gray-400">VS</div>
             </div>
             <div className="text-center">
-              {awayTeam?.team?.logo ? (
+              {awayTeam?.image_path ? (
                 <img 
-                  src={awayTeam.team.logo} 
-                  alt={awayTeam.team.name || 'Away Team'}
+                  src={awayTeam.image_path} 
+                  alt={awayTeam.name || 'Away Team'}
                   className="w-20 h-20 rounded-full object-contain mx-auto mb-3"
                 />
               ) : (
@@ -116,27 +89,10 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                   <Shield className="text-red-600 text-2xl" />
                 </div>
               )}
-              <h4 className="text-xl font-bold text-gray-900">{awayTeam?.team?.name || 'Away Team'}</h4>
+              <h4 className="text-xl font-bold text-gray-900">{awayTeam?.name || 'Away Team'}</h4>
               <div className="text-sm">
-                <span className="text-gray-500">Recent Form: </span>
-                {awayTeam?.form ? (
-                  <div className="inline-flex space-x-1">
-                    {awayTeam.form.slice(-5).split('').map((result, idx) => (
-                      <span 
-                        key={idx}
-                        className={`w-6 h-6 rounded-full text-white text-xs flex items-center justify-center ${
-                          result === 'W' ? 'bg-green-500' : 
-                          result === 'L' ? 'bg-red-500' : 
-                          'bg-gray-400'
-                        }`}
-                      >
-                        {result}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-gray-400">N/A</span>
-                )}
+                <span className="text-gray-500">Founded: </span>
+                <span className="text-gray-900">{awayTeam?.founded || 'Unknown'}</span>
               </div>
             </div>
           </div>
@@ -147,7 +103,7 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="bg-blue-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-blue-600">{h2hStats.homeWins}</div>
-                <div className="text-sm text-gray-600">{homeTeam?.team?.name || 'Home Team'} Wins</div>
+                <div className="text-sm text-gray-600">{homeTeam?.name || 'Home Team'} Wins</div>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-600">{h2hStats.draws}</div>
@@ -155,181 +111,74 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
               </div>
               <div className="bg-red-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-red-600">{h2hStats.awayWins}</div>
-                <div className="text-sm text-gray-600">{awayTeam?.team?.name || 'Away Team'} Wins</div>
+                <div className="text-sm text-gray-600">{awayTeam?.name || 'Away Team'} Wins</div>
               </div>
             </div>
           </div>
 
-          {/* Detailed Statistics Comparison */}
+          {/* Team Information */}
           <div className="space-y-6">
-            <h5 className="text-lg font-semibold text-gray-900">Season Statistics Comparison</h5>
+            <h5 className="text-lg font-semibold text-gray-900">Team Information</h5>
             
-            {/* Goals */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-success-600">{homeTeam?.goals?.for?.total?.total || 0}</div>
-                  <div className="text-sm text-gray-600">Goals For</div>
-                  <div className="text-xs text-gray-500">Avg: {homeTeam?.goals?.for?.average?.total || '0.0'}</div>
-                </div>
-                <div className="flex items-center justify-center">
-                  <Target className="text-gray-400 text-xl" />
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-success-600">{awayTeam?.goals?.for?.total?.total || 0}</div>
-                  <div className="text-sm text-gray-600">Goals For</div>
-                  <div className="text-xs text-gray-500">Avg: {awayTeam?.goals?.for?.average?.total || '0.0'}</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-danger-600">{homeTeam?.goals?.against?.total?.total || 0}</div>
-                  <div className="text-sm text-gray-600">Goals Against</div>
-                  <div className="text-xs text-gray-500">Avg: {homeTeam?.goals?.against?.average?.total || '0.0'}</div>
-                </div>
-                <div></div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-danger-600">{awayTeam?.goals?.against?.total?.total || 0}</div>
-                  <div className="text-sm text-gray-600">Goals Against</div>
-                  <div className="text-xs text-gray-500">Avg: {awayTeam?.goals?.against?.average?.total || '0.0'}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Cards & Discipline */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h6 className="font-semibold text-gray-900 mb-3 text-center flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Cards & Discipline
-              </h6>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Yellow Cards</span>
-                    <div className="flex items-center space-x-4">
-                      <span className="font-semibold">{homeYellowCards}</span>
-                      <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
-                      <span className="font-semibold">{awayYellowCards}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Red Cards</span>
-                    <div className="flex items-center space-x-4">
-                      <span className="font-semibold">{homeRedCards}</span>
-                      <div className="w-4 h-4 bg-red-500 rounded-sm"></div>
-                      <span className="font-semibold">{awayRedCards}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Clean Sheets</span>
-                    <div className="flex items-center space-x-4">
-                      <span className="font-semibold">{homeTeam.clean_sheet.total}</span>
-                      <Award className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold">{awayTeam.clean_sheet.total}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Failed to Score</span>
-                    <div className="flex items-center space-x-4">
-                      <span className="font-semibold">{homeTeam.failed_to_score.total}</span>
-                      <Zap className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold">{awayTeam.failed_to_score.total}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Performance Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h6 className="font-semibold text-gray-900 mb-3">Match Results</h6>
-                <div className="space-y-3">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h6 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <Shield className="w-4 h-4 mr-2 text-blue-600" />
+                  {homeTeam?.name}
+                </h6>
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Wins</span>
-                    <div className="flex space-x-4">
-                      <span className="font-semibold text-success-600">{homeTeam.fixtures.wins.total}</span>
-                      <span className="text-gray-400">vs</span>
-                      <span className="font-semibold text-success-600">{awayTeam.fixtures.wins.total}</span>
-                    </div>
+                    <span className="text-gray-600">Founded:</span>
+                    <span className="font-medium">{homeTeam?.founded || 'Unknown'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Draws</span>
-                    <div className="flex space-x-4">
-                      <span className="font-semibold">{homeTeam.fixtures.draws.total}</span>
-                      <span className="text-gray-400">vs</span>
-                      <span className="font-semibold">{awayTeam.fixtures.draws.total}</span>
-                    </div>
+                    <span className="text-gray-600">Team ID:</span>
+                    <span className="font-medium">{homeTeam?.id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Losses</span>
-                    <div className="flex space-x-4">
-                      <span className="font-semibold text-danger-600">{homeTeam.fixtures.loses.total}</span>
-                      <span className="text-gray-400">vs</span>
-                      <span className="font-semibold text-danger-600">{awayTeam.fixtures.loses.total}</span>
-                    </div>
+                    <span className="text-gray-600">Last Played:</span>
+                    <span className="font-medium">{homeTeam?.last_played_at ? new Date(homeTeam.last_played_at).toLocaleDateString() : 'Unknown'}</span>
                   </div>
                 </div>
               </div>
-
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h6 className="font-semibold text-gray-900 mb-3">Goal Statistics</h6>
-                <div className="space-y-3">
+              
+              <div className="bg-red-50 rounded-lg p-4">
+                <h6 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <Shield className="w-4 h-4 mr-2 text-red-600" />
+                  {awayTeam?.name}
+                </h6>
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Goals per game</span>
-                    <div className="flex space-x-4">
-                      <span className="font-semibold">{homeTeam.goals.for.average.total}</span>
-                      <span className="text-gray-400">vs</span>
-                      <span className="font-semibold">{awayTeam.goals.for.average.total}</span>
-                    </div>
+                    <span className="text-gray-600">Founded:</span>
+                    <span className="font-medium">{awayTeam?.founded || 'Unknown'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Conceded per game</span>
-                    <div className="flex space-x-4">
-                      <span className="font-semibold">{homeTeam.goals.against.average.total}</span>
-                      <span className="text-gray-400">vs</span>
-                      <span className="font-semibold">{awayTeam.goals.against.average.total}</span>
-                    </div>
+                    <span className="text-gray-600">Team ID:</span>
+                    <span className="font-medium">{awayTeam?.id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Goal difference</span>
-                    <div className="flex space-x-4">
-                      <span className="font-semibold">
-                        {homeTeam.goals.for.total.total - homeTeam.goals.against.total.total}
-                      </span>
-                      <span className="text-gray-400">vs</span>
-                      <span className="font-semibold">
-                        {awayTeam.goals.for.total.total - awayTeam.goals.against.total.total}
-                      </span>
-                    </div>
+                    <span className="text-gray-600">Last Played:</span>
+                    <span className="font-medium">{awayTeam?.last_played_at ? new Date(awayTeam.last_played_at).toLocaleDateString() : 'Unknown'}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Key Insights */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h6 className="font-semibold text-blue-900 mb-2 flex items-center">
-                <Lightbulb className="w-4 h-4 mr-2" />
-                Key Betting Insights
-              </h6>
-              <ul className="text-blue-800 space-y-1 text-sm">
-                <li>
-                  • {homeTeam.goals.for.total.total > awayTeam.goals.for.total.total ? homeTeam.team.name : awayTeam.team.name} has scored more goals this season
-                </li>
-                <li>
-                  • {homeTeam.clean_sheet.total > awayTeam.clean_sheet.total ? homeTeam.team.name : awayTeam.team.name} has better defensive record with more clean sheets
-                </li>
-                <li>
-                  • {homeYellowCards + homeRedCards < awayYellowCards + awayRedCards ? homeTeam.team.name : awayTeam.team.name} shows better discipline with fewer cards
-                </li>
-                <li>
-                  • Head-to-head: {h2hStats.homeWins > h2hStats.awayWins ? homeTeam.team.name : h2hStats.awayWins > h2hStats.homeWins ? awayTeam.team.name : "Teams are evenly matched"} {h2hStats.homeWins === h2hStats.awayWins ? "" : "has the advantage"}
-                </li>
-              </ul>
+            {/* Notice about limited data */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <Lightbulb className="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h6 className="font-semibold text-yellow-800 mb-1">Limited Data Available</h6>
+                  <p className="text-sm text-yellow-700">
+                    The current free plan provides basic team information and head-to-head history. 
+                    Detailed statistics like goals, cards, and performance metrics require a premium subscription.
+                  </p>
+                </div>
+              </div>
             </div>
+
+
           </div>
         </CardContent>
       </Card>
