@@ -115,12 +115,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           filters: `leagueIds:501`
         }),
         callSportmonks(`/fixtures`, {
-          filters: `teamIds:${homeTeamId}`,
+          filters: `teamIds:${homeTeamId};seasonIds:19735`,
           sort: `-starting_at`,
           include: "participants,scores,statistics"
         }).catch(() => ({ data: [] })),
         callSportmonks(`/fixtures`, {
-          filters: `teamIds:${awayTeamId}`,
+          filters: `teamIds:${awayTeamId};seasonIds:19735`,
           sort: `-starting_at`,
           include: "participants,scores,statistics" 
         }).catch(() => ({ data: [] }))
@@ -145,69 +145,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Calculate comprehensive team statistics from fixture history
+      // Calculate comprehensive team statistics from ALL season fixtures
       const calculateTeamStats = (fixtures: any[], teamId: number) => {
         const stats = {
+          // Basic match statistics
           matchesPlayed: 0,
           wins: 0,
           draws: 0,
           losses: 0,
+          winPercentage: 0,
+          
+          // Goal statistics
           goalsFor: 0,
           goalsAgainst: 0,
           goalDifference: 0,
           averageGoalsFor: 0,
           averageGoalsAgainst: 0,
+          
+          // Defensive statistics
           cleanSheets: 0,
+          cleanSheetPercentage: 0,
+          
+          // Offensive statistics
           failedToScore: 0,
-          winPercentage: 0,
-          form: [] as string[]
+          failedToScorePercentage: 0,
+          
+          // Home vs Away breakdown
+          homeMatches: 0,
+          homeWins: 0,
+          homeDraws: 0,
+          homeLosses: 0,
+          homeGoalsFor: 0,
+          homeGoalsAgainst: 0,
+          
+          awayMatches: 0,
+          awayWins: 0,
+          awayDraws: 0,
+          awayLosses: 0,
+          awayGoalsFor: 0,
+          awayGoalsAgainst: 0,
+          
+          // Form and streaks
+          form: [] as string[],
+          currentStreak: { type: '', count: 0 },
+          longestWinStreak: 0,
+          longestUnbeatenStreak: 0,
+          
+          // Goals per time period (if available)
+          goalsFirstHalf: 0,
+          goalsSecondHalf: 0,
+          
+          // Big wins/losses
+          biggestWin: { score: '', opponent: '', date: '' },
+          biggestLoss: { score: '', opponent: '', date: '' }
         };
 
-        fixtures.slice(0, 20).forEach((fixture) => {
-          if (fixture.state_id === 5 && fixture.participants) { // Only finished matches
-            const teamParticipant = fixture.participants.find((p: any) => p.id === teamId);
-            const opponentParticipant = fixture.participants.find((p: any) => p.id !== teamId);
+        // Process ALL fixtures for the team (not just last 20)
+        const finishedMatches = fixtures.filter(fixture => fixture.state_id === 5 && fixture.participants);
+        
+        finishedMatches.forEach((fixture) => {
+          const teamParticipant = fixture.participants.find((p: any) => p.id === teamId);
+          const opponentParticipant = fixture.participants.find((p: any) => p.id !== teamId);
+          
+          if (teamParticipant && opponentParticipant && fixture.scores) {
+            stats.matchesPlayed++;
             
-            if (teamParticipant && opponentParticipant && fixture.scores) {
-              stats.matchesPlayed++;
-              
-              // Get goals from scores
-              const teamGoals = fixture.scores
-                .filter((s: any) => s.participant_id === teamId && s.description === 'CURRENT')
-                .reduce((sum: number, s: any) => sum + (s.score?.goals || 0), 0);
-              
-              const opponentGoals = fixture.scores
-                .filter((s: any) => s.participant_id !== teamId && s.description === 'CURRENT')
-                .reduce((sum: number, s: any) => sum + (s.score?.goals || 0), 0);
+            // Determine if home or away
+            const isHome = teamParticipant.meta?.location === 'home';
+            
+            // Get goals from scores
+            const teamGoals = fixture.scores
+              .filter((s: any) => s.participant_id === teamId && s.description === 'CURRENT')
+              .reduce((sum: number, s: any) => sum + (s.score?.goals || 0), 0);
+            
+            const opponentGoals = fixture.scores
+              .filter((s: any) => s.participant_id !== teamId && s.description === 'CURRENT')
+              .reduce((sum: number, s: any) => sum + (s.score?.goals || 0), 0);
 
-              stats.goalsFor += teamGoals;
-              stats.goalsAgainst += opponentGoals;
+            // Get half-time goals if available
+            const teamFirstHalf = fixture.scores
+              .filter((s: any) => s.participant_id === teamId && s.description === '1ST_HALF')
+              .reduce((sum: number, s: any) => sum + (s.score?.goals || 0), 0);
+            
+            const teamSecondHalf = teamGoals - teamFirstHalf;
 
-              // Determine result
-              if (teamParticipant.meta?.winner === true) {
-                stats.wins++;
-                stats.form.push('W');
-              } else if (teamParticipant.meta?.winner === false) {
-                stats.losses++;
-                stats.form.push('L');
-              } else {
-                stats.draws++;
-                stats.form.push('D');
-              }
+            stats.goalsFor += teamGoals;
+            stats.goalsAgainst += opponentGoals;
+            stats.goalsFirstHalf += teamFirstHalf;
+            stats.goalsSecondHalf += teamSecondHalf;
 
-              // Clean sheets and failed to score
-              if (opponentGoals === 0) stats.cleanSheets++;
-              if (teamGoals === 0) stats.failedToScore++;
+            // Home/Away statistics
+            if (isHome) {
+              stats.homeMatches++;
+              stats.homeGoalsFor += teamGoals;
+              stats.homeGoalsAgainst += opponentGoals;
+            } else {
+              stats.awayMatches++;
+              stats.awayGoalsFor += teamGoals;
+              stats.awayGoalsAgainst += opponentGoals;
             }
+
+            // Determine result
+            let result = '';
+            if (teamParticipant.meta?.winner === true) {
+              stats.wins++;
+              if (isHome) stats.homeWins++;
+              else stats.awayWins++;
+              result = 'W';
+              
+              // Check for biggest win
+              const goalDiff = teamGoals - opponentGoals;
+              if (!stats.biggestWin.score || goalDiff > parseInt(stats.biggestWin.score.split('-')[0]) - parseInt(stats.biggestWin.score.split('-')[1])) {
+                stats.biggestWin = {
+                  score: `${teamGoals}-${opponentGoals}`,
+                  opponent: opponentParticipant.name,
+                  date: fixture.starting_at
+                };
+              }
+            } else if (teamParticipant.meta?.winner === false) {
+              stats.losses++;
+              if (isHome) stats.homeLosses++;
+              else stats.awayLosses++;
+              result = 'L';
+              
+              // Check for biggest loss
+              const goalDiff = opponentGoals - teamGoals;
+              if (!stats.biggestLoss.score || goalDiff > parseInt(stats.biggestLoss.score.split('-')[1]) - parseInt(stats.biggestLoss.score.split('-')[0])) {
+                stats.biggestLoss = {
+                  score: `${teamGoals}-${opponentGoals}`,
+                  opponent: opponentParticipant.name,
+                  date: fixture.starting_at
+                };
+              }
+            } else {
+              stats.draws++;
+              if (isHome) stats.homeDraws++;
+              else stats.awayDraws++;
+              result = 'D';
+            }
+
+            // Add to form (recent 10 matches)
+            if (stats.form.length < 10) {
+              stats.form.unshift(result); // Add to beginning for chronological order
+            }
+
+            // Clean sheets and failed to score
+            if (opponentGoals === 0) stats.cleanSheets++;
+            if (teamGoals === 0) stats.failedToScore++;
           }
         });
 
-        // Calculate averages and percentages
+        // Calculate all percentages and averages
         if (stats.matchesPlayed > 0) {
           stats.goalDifference = stats.goalsFor - stats.goalsAgainst;
           stats.averageGoalsFor = Math.round((stats.goalsFor / stats.matchesPlayed) * 100) / 100;
           stats.averageGoalsAgainst = Math.round((stats.goalsAgainst / stats.matchesPlayed) * 100) / 100;
           stats.winPercentage = Math.round((stats.wins / stats.matchesPlayed) * 100);
+          stats.cleanSheetPercentage = Math.round((stats.cleanSheets / stats.matchesPlayed) * 100);
+          stats.failedToScorePercentage = Math.round((stats.failedToScore / stats.matchesPlayed) * 100);
+        }
+
+        // Calculate current streak
+        if (stats.form.length > 0) {
+          const lastResult = stats.form[0];
+          let streakCount = 1;
+          for (let i = 1; i < stats.form.length; i++) {
+            if (stats.form[i] === lastResult) {
+              streakCount++;
+            } else {
+              break;
+            }
+          }
+          stats.currentStreak = { type: lastResult, count: streakCount };
         }
 
         return stats;

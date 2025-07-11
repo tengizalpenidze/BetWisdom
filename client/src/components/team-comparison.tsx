@@ -227,7 +227,7 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
 
             {/* Comprehensive Team Statistics */}
             <div>
-              <h5 className="text-lg font-semibold text-gray-900 mb-4">Team Statistics (Last 20 Matches)</h5>
+              <h5 className="text-lg font-semibold text-gray-900 mb-4">Season Statistics (All Matches)</h5>
               <div className="grid grid-cols-2 gap-6">
                 {/* Home Team Stats */}
                 <div className="bg-blue-50 rounded-lg p-4">
@@ -419,6 +419,136 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Home vs Away Performance */}
+            <div>
+              <h5 className="text-lg font-semibold text-gray-900 mb-4">Home vs Away Performance</h5>
+              <div className="grid grid-cols-2 gap-6">
+                {/* Home Team Home/Away Stats */}
+                <div className="space-y-4">
+                  <h6 className="font-medium text-blue-800">{homeTeam?.name}</h6>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Home Performance */}
+                    <div className="bg-green-50 rounded-lg p-3">
+                      <h6 className="text-sm font-semibold text-green-800 mb-2">Home Record</h6>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span>Matches:</span>
+                          <span>{homeTeam?.statistics?.homeMatches || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>W-D-L:</span>
+                          <span>{homeTeam?.statistics?.homeWins || 0}-{homeTeam?.statistics?.homeDraws || 0}-{homeTeam?.statistics?.homeLosses || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Goals:</span>
+                          <span>{homeTeam?.statistics?.homeGoalsFor || 0}:{homeTeam?.statistics?.homeGoalsAgainst || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Away Performance */}
+                    <div className="bg-blue-50 rounded-lg p-3">
+                      <h6 className="text-sm font-semibold text-blue-800 mb-2">Away Record</h6>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span>Matches:</span>
+                          <span>{homeTeam?.statistics?.awayMatches || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>W-D-L:</span>
+                          <span>{homeTeam?.statistics?.awayWins || 0}-{homeTeam?.statistics?.awayDraws || 0}-{homeTeam?.statistics?.awayLosses || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Goals:</span>
+                          <span>{homeTeam?.statistics?.awayGoalsFor || 0}:{homeTeam?.statistics?.awayGoalsAgainst || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Current Streak */}
+                  {homeTeam?.statistics?.currentStreak?.type && (
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm">
+                        <span className="text-gray-600">Current Streak:</span>
+                        <span className={`ml-2 font-semibold ${
+                          homeTeam.statistics.currentStreak.type === 'W' ? 'text-green-600' :
+                          homeTeam.statistics.currentStreak.type === 'L' ? 'text-red-600' : 'text-gray-600'
+                        }`}>
+                          {homeTeam.statistics.currentStreak.count} {
+                            homeTeam.statistics.currentStreak.type === 'W' ? 'wins' :
+                            homeTeam.statistics.currentStreak.type === 'L' ? 'losses' : 'draws'
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Away Team Home/Away Stats */}
+                <div className="space-y-4">
+                  <h6 className="font-medium text-red-800">{awayTeam?.name}</h6>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Home Performance */}
+                    <div className="bg-green-50 rounded-lg p-3">
+                      <h6 className="text-sm font-semibold text-green-800 mb-2">Home Record</h6>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span>Matches:</span>
+                          <span>{awayTeam?.statistics?.homeMatches || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>W-D-L:</span>
+                          <span>{awayTeam?.statistics?.homeWins || 0}-{awayTeam?.statistics?.homeDraws || 0}-{awayTeam?.statistics?.homeLosses || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Goals:</span>
+                          <span>{awayTeam?.statistics?.homeGoalsFor || 0}:{awayTeam?.statistics?.homeGoalsAgainst || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Away Performance */}
+                    <div className="bg-red-50 rounded-lg p-3">
+                      <h6 className="text-sm font-semibold text-red-800 mb-2">Away Record</h6>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span>Matches:</span>
+                          <span>{awayTeam?.statistics?.awayMatches || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>W-D-L:</span>
+                          <span>{awayTeam?.statistics?.awayWins || 0}-{awayTeam?.statistics?.awayDraws || 0}-{awayTeam?.statistics?.awayLosses || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Goals:</span>
+                          <span>{awayTeam?.statistics?.awayGoalsFor || 0}:{awayTeam?.statistics?.awayGoalsAgainst || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Current Streak */}
+                  {awayTeam?.statistics?.currentStreak?.type && (
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm">
+                        <span className="text-gray-600">Current Streak:</span>
+                        <span className={`ml-2 font-semibold ${
+                          awayTeam.statistics.currentStreak.type === 'W' ? 'text-green-600' :
+                          awayTeam.statistics.currentStreak.type === 'L' ? 'text-red-600' : 'text-gray-600'
+                        }`}>
+                          {awayTeam.statistics.currentStreak.count} {
+                            awayTeam.statistics.currentStreak.type === 'W' ? 'wins' :
+                            awayTeam.statistics.currentStreak.type === 'L' ? 'losses' : 'draws'
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
