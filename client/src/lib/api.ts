@@ -303,3 +303,8 @@ export async function getMatch(id: number): Promise<ApiFootballResponse<MatchDat
   const response = await apiRequest("GET", `/api/matches/${id}`);
   return response.json();
 }
+
+export async function getTeams(): Promise<ApiFootballResponse<TeamData>> {
+  const response = await apiRequest("GET", "/api/teams");
+  return response.json();
+}

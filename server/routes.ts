@@ -48,12 +48,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
         case "matches":
         default:
-          endpoint = "/fixtures";
-          // For free plan, use available date range
-          params = { 
-            date: "2025-07-11", // Available date for free plan
-            league: "39" // Premier League for free plan
-          };
+          return res.json({
+            get: "search",
+            parameters: { search: query, type: "matches" },
+            errors: ["Free API plan limitations: Live match search not available. Use 'teams' search to find Premier League teams for analysis."],
+            results: 0,
+            paging: { current: 1, total: 1 },
+            response: [],
+            message: "Try searching for 'teams' instead to find Premier League teams you can analyze."
+          });
           break;
       }
 
@@ -68,19 +71,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get upcoming matches for popular leagues (Free plan compatible)
+  // Get teams for analysis (Free plan compatible)
   app.get("/api/matches/upcoming", async (req, res) => {
     try {
-      // Free plan has very limited date access, so let's use current season data from Premier League
-      const currentSeason = new Date().getFullYear();
-      
-      // Get Premier League fixtures for the available date range
-      const data = await callApiFootball("/fixtures", {
-        date: "2025-07-11", // Use available date from free plan
-        league: "39" // Premier League
+      res.json({
+        get: "fixtures",
+        parameters: { league: "39" },
+        errors: ["Free API plan limitations: Unable to access current match fixtures. Please use the team analysis feature below."],
+        results: 0,
+        paging: { current: 1, total: 1 },
+        response: [],
+        message: "Due to API limitations on the free plan, live match data is not available. However, you can analyze any two Premier League teams using their historical statistics from the 2022 season."
       });
-      
-      res.json(data);
     } catch (error) {
       console.error("Upcoming matches error:", error);
       res.status(500).json({ 
@@ -202,6 +204,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: error instanceof Error ? error.message : "Failed to fetch match",
         error: "MATCH_FETCH_FAILED"
+      });
+    }
+  });
+
+  // Get Premier League teams for team selection
+  app.get("/api/teams", async (req, res) => {
+    try {
+      const data = await callApiFootball("/teams", {
+        league: "39", // Premier League
+        season: "2022"
+      });
+      res.json(data);
+    } catch (error) {
+      console.error("Teams fetch error:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to fetch teams",
+        error: "TEAMS_FETCH_FAILED"
       });
     }
   });
