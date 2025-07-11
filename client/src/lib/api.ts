@@ -289,7 +289,7 @@ export async function getUpcomingMatches(): Promise<ApiFootballResponse<MatchDat
   return response.json();
 }
 
-export async function analyzeMatch(homeTeamId: number, awayTeamId: number, season?: number): Promise<AnalysisResponse> {
+export async function analyzeMatch(homeTeamId: number, awayTeamId: number, season: number = 2022): Promise<AnalysisResponse> {
   const response = await apiRequest("POST", "/api/analyze", { homeTeamId, awayTeamId, season });
   return response.json();
 }

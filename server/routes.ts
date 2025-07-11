@@ -24,7 +24,14 @@ async function callApiFootball(endpoint: string, params: Record<string, string> 
     throw new Error(`API-Football error: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  
+  // Log errors if any
+  if (data.errors && data.errors.length > 0) {
+    console.log(`API Errors for ${endpoint}:`, data.errors);
+  }
+  
+  return data;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -95,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get team statistics and head-to-head analysis
   app.post("/api/analyze", async (req, res) => {
     try {
-      const { homeTeamId, awayTeamId, season = new Date().getFullYear() } = matchAnalysisRequestSchema.parse(req.body);
+      const { homeTeamId, awayTeamId, season = 2022 } = matchAnalysisRequestSchema.parse(req.body);
 
       // Fetch team statistics
       const [homeTeamStats, awayTeamStats, h2hData] = await Promise.all([
@@ -115,27 +122,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ]);
 
       // Store in local storage for caching
-      if (homeTeamStats.response?.[0]) {
+      if (homeTeamStats.response) {
         await storage.createOrUpdateTeamStats({
           teamId: homeTeamId,
           season,
           leagueId: 39,
-          stats: homeTeamStats.response[0]
+          stats: homeTeamStats.response
         });
       }
 
-      if (awayTeamStats.response?.[0]) {
+      if (awayTeamStats.response) {
         await storage.createOrUpdateTeamStats({
           teamId: awayTeamId,
           season,
           leagueId: 39,
-          stats: awayTeamStats.response[0]
+          stats: awayTeamStats.response
         });
       }
 
       res.json({
-        homeTeam: homeTeamStats.response?.[0] || null,
-        awayTeam: awayTeamStats.response?.[0] || null,
+        homeTeam: homeTeamStats.response || null,
+        awayTeam: awayTeamStats.response || null,
         headToHead: h2hData.response || []
       });
     } catch (error) {
