@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { getTeams } from "@/lib/api";
 import type { TeamData, SportmonksTeam } from "@/lib/api";
 
 export function TeamSelector() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLeague, setSelectedLeague] = useState("all");
   const [selectedHomeTeam, setSelectedHomeTeam] = useState<SportmonksTeam | null>(null);
@@ -38,19 +40,19 @@ export function TeamSelector() {
       <CardHeader>
         <CardTitle className="flex items-center">
           <Users className="w-5 h-5 mr-2" />
-          Select Teams to Analyze
+          {t('teamSelector.title')}
         </CardTitle>
         <p className="text-sm text-gray-600">
-          Choose two teams to compare their statistics and get betting insights.
+          {t('teamSelector.description')}
         </p>
         {teamsData?.apiLimitation && (
           <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start space-x-2">
               <div className="w-4 h-4 text-yellow-600 mt-0.5">⚠️</div>
               <div className="text-sm">
-                <div className="font-medium text-yellow-800">API Limitation Notice</div>
+                <div className="font-medium text-yellow-800">{t('teamSelector.apiLimitation.title')}</div>
                 <div className="text-yellow-700 mt-1">
-                  {teamsData.apiLimitation.description}
+                  {t('teamSelector.apiLimitation.description')}
                 </div>
               </div>
             </div>
@@ -63,7 +65,7 @@ export function TeamSelector() {
           <div className="relative">
             <Input 
               type="text" 
-              placeholder="Search available teams..."
+              placeholder={t('teamSelector.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -76,10 +78,10 @@ export function TeamSelector() {
               <Filter className="text-gray-400 w-4 h-4" />
               <Select value={selectedLeague} onValueChange={setSelectedLeague}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Filter by league" />
+                  <SelectValue placeholder={t('teamSelector.filterByLeague')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Leagues</SelectItem>
+                  <SelectItem value="all">{t('teamSelector.allLeagues')}</SelectItem>
                   {availableLeagues.map((league) => (
                     <SelectItem key={league} value={league}>
                       {league}
@@ -88,7 +90,7 @@ export function TeamSelector() {
                 </SelectContent>
               </Select>
               <span className="text-sm text-gray-500">
-                {filteredTeams.length} teams
+                {filteredTeams.length} {t('teamSelector.teamsCount')}
               </span>
             </div>
           )}
@@ -97,10 +99,10 @@ export function TeamSelector() {
         {/* Selected Teams */}
         {(selectedHomeTeam || selectedAwayTeam) && (
           <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-semibold text-gray-900 mb-3">Selected Teams:</h4>
+            <h4 className="font-semibold text-gray-900 mb-3">{t('teamSelector.title')}:</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="text-center">
-                <div className="text-sm text-gray-600 mb-2">Home Team</div>
+                <div className="text-sm text-gray-600 mb-2">{t('teamSelector.homeTeam')}</div>
                 {selectedHomeTeam ? (
                   <div className="flex items-center justify-center space-x-2">
                     <img 
@@ -114,15 +116,15 @@ export function TeamSelector() {
                       size="sm"
                       onClick={() => setSelectedHomeTeam(null)}
                     >
-                      Remove
+                      {t('teamSelector.remove')}
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-gray-400">Not selected</div>
+                  <div className="text-gray-400">{t('teamSelector.notSelected')}</div>
                 )}
               </div>
               <div className="text-center">
-                <div className="text-sm text-gray-600 mb-2">Away Team</div>
+                <div className="text-sm text-gray-600 mb-2">{t('teamSelector.awayTeam')}</div>
                 {selectedAwayTeam ? (
                   <div className="flex items-center justify-center space-x-2">
                     <img 
@@ -136,11 +138,11 @@ export function TeamSelector() {
                       size="sm"
                       onClick={() => setSelectedAwayTeam(null)}
                     >
-                      Remove
+                      {t('teamSelector.remove')}
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-gray-400">Not selected</div>
+                  <div className="text-gray-400">{t('teamSelector.notSelected')}</div>
                 )}
               </div>
             </div>
@@ -148,7 +150,7 @@ export function TeamSelector() {
               <div className="text-center mt-4">
                 <Link href={`/analyze/${selectedHomeTeam.id}/${selectedAwayTeam.id}`}>
                   <Button className="bg-primary hover:bg-primary/90">
-                    Analyze Teams
+                    {t('teamSelector.analyzeTeams')}
                   </Button>
                 </Link>
               </div>
@@ -165,16 +167,16 @@ export function TeamSelector() {
           </div>
         ) : error ? (
           <div className="text-center py-8">
-            <div className="text-red-600 mb-2">Failed to load teams</div>
+            <div className="text-red-600 mb-2">{t('errors.failedToLoad')} {t('teamSelector.teamsCount')}</div>
             <div className="text-sm text-gray-500">
-              {error instanceof Error ? error.message : "Please check your connection and try again"}
+              {error instanceof Error ? error.message : t('teamComparison.checkConnection')}
             </div>
           </div>
         ) : filteredTeams.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-gray-500 mb-2">No teams found</div>
+            <div className="text-gray-500 mb-2">{t('teamSelector.noTeamsFound')}</div>
             <div className="text-sm text-gray-400">
-              Try a different search term
+              {t('teamSelector.tryDifferentSearch')}
             </div>
           </div>
         ) : (

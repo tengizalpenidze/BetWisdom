@@ -1,31 +1,30 @@
-import { Link, useLocation } from "wouter";
-import { TrendingUp } from "lucide-react";
+import { useTranslation } from 'react-i18next';
+import { Link } from 'wouter';
+import { LanguageSwitcher } from './language-switcher';
+import { Zap } from 'lucide-react';
 
 export function Header() {
-  const [location] = useLocation();
+  const { t } = useTranslation();
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
-            <Link href="/">
-              <div className="flex items-center space-x-2 cursor-pointer">
-                <TrendingUp className="text-primary text-2xl" />
-                <h1 className="text-2xl font-bold text-gray-900">BetWisdom</h1>
-              </div>
+        <div className="flex justify-between items-center h-16">
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{t('header.title')}</h1>
+              <p className="text-xs text-gray-500">{t('header.subtitle')}</p>
+            </div>
+          </Link>
+          
+          <nav className="flex items-center space-x-6">
+            <Link href="/" className="text-gray-600 hover:text-gray-900 font-medium">
+              {t('navigation.home')}
             </Link>
-            <span className="text-sm text-gray-500 hidden sm:block">Smart Football Analytics</span>
-          </div>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/" className={`font-medium transition-colors ${
-              location === "/" ? "text-primary" : "text-gray-700 hover:text-primary"
-            }`}>
-              Matches
-            </Link>
-            <a href="#" className="text-gray-700 hover:text-primary font-medium transition-colors">Teams</a>
-            <a href="#" className="text-gray-700 hover:text-primary font-medium transition-colors">Statistics</a>
-            <a href="#" className="text-gray-700 hover:text-primary font-medium transition-colors">Help</a>
+            <LanguageSwitcher />
           </nav>
         </div>
       </div>

@@ -1,0 +1,103 @@
+{
+  "header": {
+    "title": "BetWisdom",
+    "subtitle": "Football Analytics Platform"
+  },
+  "navigation": {
+    "home": "Home",
+    "analysis": "Analysis"
+  },
+  "language": {
+    "english": "English",
+    "georgian": "ქართული"
+  },
+  "home": {
+    "title": "Football Match Analysis",
+    "subtitle": "Get detailed team statistics and betting insights",
+    "description": "Analyze team performance, compare statistics, and make informed betting decisions with our comprehensive football analytics platform.",
+    "upcomingMatches": "Upcoming Matches",
+    "teamAnalysis": "Team Analysis"
+  },
+  "teamSelector": {
+    "title": "Select Teams to Analyze",
+    "description": "Choose two teams to compare their statistics and get betting insights.",
+    "searchPlaceholder": "Search available teams...",
+    "homeTeam": "Home Team",
+    "awayTeam": "Away Team",
+    "notSelected": "Not selected",
+    "remove": "Remove",
+    "analyzeTeams": "Analyze Teams",
+    "noTeamsFound": "No teams found",
+    "tryDifferentSearch": "Try a different search term",
+    "apiLimitation": {
+      "title": "API Limitation Notice",
+      "description": "Only basic European teams available. Major league teams (Napoli, PSG, Barcelona, etc.) require paid API plan."
+    },
+    "filterByLeague": "Filter by league",
+    "allLeagues": "All Leagues",
+    "teamsCount": "teams"
+  },
+  "matchCard": {
+    "vs": "vs",
+    "league": "League",
+    "venue": "Venue",
+    "analyze": "Analyze"
+  },
+  "teamComparison": {
+    "title": "Team Comparison Analysis",
+    "homeTeam": "Home Team",
+    "awayTeam": "Away Team",
+    "teamStats": "Team Statistics",
+    "headToHead": "Head-to-Head History",
+    "loading": "Loading analysis...",
+    "error": "Failed to load analysis",
+    "checkConnection": "Please check your connection and try again",
+    "limitationNotice": {
+      "title": "Data Limitation Notice",
+      "description": "Due to free API plan restrictions, only basic historical data (2005-2016) is available. Current season statistics and comprehensive match data require a paid subscription."
+    },
+    "form": "Form",
+    "matches": "matches",
+    "wins": "Wins",
+    "draws": "Draws",
+    "losses": "Losses",
+    "goalsFor": "Goals For",
+    "goalsAgainst": "Goals Against",
+    "goalDifference": "Goal Difference",
+    "cleanSheets": "Clean Sheets",
+    "failedToScore": "Failed to Score",
+    "avgGoalsPerMatch": "Avg Goals/Match",
+    "winPercentage": "Win %",
+    "biggestWin": "Biggest Win",
+    "biggestLoss": "Biggest Loss",
+    "currentStreak": "Current Streak",
+    "penalties": "Penalties",
+    "scored": "Scored",
+    "missed": "Missed",
+    "cards": "Cards",
+    "yellow": "Yellow",
+    "red": "Red",
+    "corners": "Corners",
+    "total": "Total",
+    "average": "Average"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "home": "Home",
+    "away": "Away",
+    "total": "Total",
+    "percentage": "Percentage",
+    "season": "Season",
+    "date": "Date",
+    "result": "Result",
+    "venue": "Venue"
+  },
+  "errors": {
+    "failedToLoad": "Failed to load",
+    "networkError": "Network error occurred",
+    "apiError": "API error occurred",
+    "tryAgain": "Please try again"
+  }
+}

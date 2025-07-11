@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
-import { Header } from "@/components/header";
 import { TeamSelector } from "@/components/team-selector";
 import { getUpcomingMatches } from "@/lib/api";
 
 export default function Home() {
+  const { t } = useTranslation();
   const { data: upcomingMatches } = useQuery({
     queryKey: ["/api/matches/upcoming"],
     queryFn: getUpcomingMatches,
@@ -13,18 +14,16 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
+    <div>
       {/* Hero Section */}
       <section className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
               <TrendingUp className="w-8 h-8 text-primary mr-2" />
-              <h2 className="text-3xl font-bold text-gray-900">Football Analytics for Smart Betting</h2>
+              <h2 className="text-3xl font-bold text-gray-900">{t('home.title')}</h2>
             </div>
-            <p className="text-gray-600">Analyze Premier League team statistics from the 2022 season to make informed betting decisions</p>
+            <p className="text-gray-600">{t('home.description')}</p>
           </div>
 
           {/* API Limitation Notice */}
@@ -37,11 +36,11 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-amber-800">
-                      Limited API Access
+                      {t('teamSelector.apiLimitation.title')}
                     </h3>
                     <div className="mt-2 text-sm text-amber-700">
                       <p>{upcomingMatches.message}</p>
-                      <p className="mt-1">Use the team selector below to compare any two Premier League teams.</p>
+                      <p className="mt-1">{t('home.teamAnalysis')}</p>
                     </div>
                   </div>
                 </div>
