@@ -79,7 +79,27 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                 </div>
               )}
               <h4 className="text-xl font-bold text-gray-900">{homeTeam?.team?.name || 'Home Team'}</h4>
-              <p className="text-gray-500">{homeTeam?.form || 'N/A'}</p>
+              <div className="text-sm">
+                <span className="text-gray-500">Recent Form: </span>
+                {homeTeam?.form ? (
+                  <div className="inline-flex space-x-1">
+                    {homeTeam.form.slice(-5).split('').map((result, idx) => (
+                      <span 
+                        key={idx}
+                        className={`w-6 h-6 rounded-full text-white text-xs flex items-center justify-center ${
+                          result === 'W' ? 'bg-green-500' : 
+                          result === 'L' ? 'bg-red-500' : 
+                          'bg-gray-400'
+                        }`}
+                      >
+                        {result}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-400">N/A</span>
+                )}
+              </div>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-4xl font-bold text-gray-400">VS</div>
@@ -97,7 +117,27 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                 </div>
               )}
               <h4 className="text-xl font-bold text-gray-900">{awayTeam?.team?.name || 'Away Team'}</h4>
-              <p className="text-gray-500">{awayTeam?.form || 'N/A'}</p>
+              <div className="text-sm">
+                <span className="text-gray-500">Recent Form: </span>
+                {awayTeam?.form ? (
+                  <div className="inline-flex space-x-1">
+                    {awayTeam.form.slice(-5).split('').map((result, idx) => (
+                      <span 
+                        key={idx}
+                        className={`w-6 h-6 rounded-full text-white text-xs flex items-center justify-center ${
+                          result === 'W' ? 'bg-green-500' : 
+                          result === 'L' ? 'bg-red-500' : 
+                          'bg-gray-400'
+                        }`}
+                      >
+                        {result}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-400">N/A</span>
+                )}
+              </div>
             </div>
           </div>
 
