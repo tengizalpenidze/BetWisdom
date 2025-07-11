@@ -107,17 +107,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { homeTeamId, awayTeamId, season = 2022 } = matchAnalysisRequestSchema.parse(req.body);
 
-      // Fetch team statistics, standings, and head-to-head data using Sportmonks API with enhanced includes
-      const [homeTeamData, awayTeamData, h2hData, standingsData] = await Promise.all([
-        callSportmonks(`/teams/${homeTeamId}`, {
-          include: "statistics"
-        }),
-        callSportmonks(`/teams/${awayTeamId}`, {
-          include: "statistics"  
-        }),
-        callSportmonks(`/fixtures/head-to-head/${homeTeamId}/${awayTeamId}`, {
-          include: "participants,scores"
-        }),
+      // Fetch team and standings data using Sportmonks API 
+      const [homeTeamData, awayTeamData, standingsData] = await Promise.all([
+        callSportmonks(`/teams/${homeTeamId}`),
+        callSportmonks(`/teams/${awayTeamId}`),
         callSportmonks(`/standings`, {
           filters: `leagueIds:501`
         })
@@ -155,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...awayTeamData.data || null,
           standing: awayTeamStanding || null
         },
-        headToHead: h2hData.data || [],
+        headToHead: [], // Temporarily disabled due to API endpoint limitations
         leagueStandings: standingsData?.data?.filter(s => 
           s.league_id === 501 && [homeTeamId, awayTeamId].includes(s.participant_id)
         ) || []
