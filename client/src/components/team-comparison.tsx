@@ -23,6 +23,11 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
 
   // Calculate head-to-head stats
   const h2hStats = headToHead.reduce((acc, match) => {
+    // Safety check for match structure
+    if (!match?.teams?.home?.team?.id || !match?.goals || !homeTeam?.team?.id) {
+      return acc;
+    }
+    
     if (match.teams.home.team.id === homeTeam.team.id) {
       if (match.goals.home > match.goals.away) acc.homeWins++;
       else if (match.goals.home < match.goals.away) acc.awayWins++;
@@ -35,15 +40,16 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
     return acc;
   }, { homeWins: 0, awayWins: 0, draws: 0 });
 
-  // Calculate total yellow/red cards
-  const getCardTotal = (cards: TeamStatsData["cards"]["yellow"] | TeamStatsData["cards"]["red"]) => {
-    return Object.values(cards).reduce((total, period) => total + (period?.total || 0), 0);
+  // Calculate total yellow/red cards with safety checks
+  const getCardTotal = (cards: any) => {
+    if (!cards || typeof cards !== 'object') return 0;
+    return Object.values(cards).reduce((total: number, period: any) => total + (period?.total || 0), 0);
   };
 
-  const homeYellowCards = getCardTotal(homeTeam.cards.yellow);
-  const awayYellowCards = getCardTotal(awayTeam.cards.yellow);
-  const homeRedCards = getCardTotal(homeTeam.cards.red);
-  const awayRedCards = getCardTotal(awayTeam.cards.red);
+  const homeYellowCards = getCardTotal(homeTeam?.cards?.yellow);
+  const awayYellowCards = getCardTotal(awayTeam?.cards?.yellow);
+  const homeRedCards = getCardTotal(homeTeam?.cards?.red);
+  const awayRedCards = getCardTotal(awayTeam?.cards?.red);
 
   return (
     <div className="space-y-6">
@@ -53,7 +59,7 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
             <CardTitle className="text-2xl font-bold text-gray-900">Team Comparison Analysis</CardTitle>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <Target className="w-4 h-4" />
-              <span>Season {homeTeam.league.season}</span>
+              <span>Season {homeTeam?.league?.season || 2022}</span>
             </div>
           </div>
         </CardHeader>
@@ -61,10 +67,10 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
           {/* Team Headers */}
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="text-center">
-              {homeTeam.team.logo ? (
+              {homeTeam?.team?.logo ? (
                 <img 
                   src={homeTeam.team.logo} 
-                  alt={homeTeam.team.name}
+                  alt={homeTeam.team.name || 'Home Team'}
                   className="w-20 h-20 rounded-full object-contain mx-auto mb-3"
                 />
               ) : (
@@ -72,17 +78,17 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                   <Shield className="text-blue-600 text-2xl" />
                 </div>
               )}
-              <h4 className="text-xl font-bold text-gray-900">{homeTeam.team.name}</h4>
-              <p className="text-gray-500">{homeTeam.form}</p>
+              <h4 className="text-xl font-bold text-gray-900">{homeTeam?.team?.name || 'Home Team'}</h4>
+              <p className="text-gray-500">{homeTeam?.form || 'N/A'}</p>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-4xl font-bold text-gray-400">VS</div>
             </div>
             <div className="text-center">
-              {awayTeam.team.logo ? (
+              {awayTeam?.team?.logo ? (
                 <img 
                   src={awayTeam.team.logo} 
-                  alt={awayTeam.team.name}
+                  alt={awayTeam.team.name || 'Away Team'}
                   className="w-20 h-20 rounded-full object-contain mx-auto mb-3"
                 />
               ) : (
@@ -90,8 +96,8 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                   <Shield className="text-red-600 text-2xl" />
                 </div>
               )}
-              <h4 className="text-xl font-bold text-gray-900">{awayTeam.team.name}</h4>
-              <p className="text-gray-500">{awayTeam.form}</p>
+              <h4 className="text-xl font-bold text-gray-900">{awayTeam?.team?.name || 'Away Team'}</h4>
+              <p className="text-gray-500">{awayTeam?.form || 'N/A'}</p>
             </div>
           </div>
 
@@ -101,7 +107,7 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="bg-blue-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-blue-600">{h2hStats.homeWins}</div>
-                <div className="text-sm text-gray-600">{homeTeam.team.name} Wins</div>
+                <div className="text-sm text-gray-600">{homeTeam?.team?.name || 'Home Team'} Wins</div>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-600">{h2hStats.draws}</div>
@@ -109,7 +115,7 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
               </div>
               <div className="bg-red-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-red-600">{h2hStats.awayWins}</div>
-                <div className="text-sm text-gray-600">{awayTeam.team.name} Wins</div>
+                <div className="text-sm text-gray-600">{awayTeam?.team?.name || 'Away Team'} Wins</div>
               </div>
             </div>
           </div>
@@ -122,30 +128,30 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-success-600">{homeTeam.goals.for.total.total}</div>
+                  <div className="text-2xl font-bold text-success-600">{homeTeam?.goals?.for?.total?.total || 0}</div>
                   <div className="text-sm text-gray-600">Goals For</div>
-                  <div className="text-xs text-gray-500">Avg: {homeTeam.goals.for.average.total}</div>
+                  <div className="text-xs text-gray-500">Avg: {homeTeam?.goals?.for?.average?.total || '0.0'}</div>
                 </div>
                 <div className="flex items-center justify-center">
                   <Target className="text-gray-400 text-xl" />
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-success-600">{awayTeam.goals.for.total.total}</div>
+                  <div className="text-2xl font-bold text-success-600">{awayTeam?.goals?.for?.total?.total || 0}</div>
                   <div className="text-sm text-gray-600">Goals For</div>
-                  <div className="text-xs text-gray-500">Avg: {awayTeam.goals.for.average.total}</div>
+                  <div className="text-xs text-gray-500">Avg: {awayTeam?.goals?.for?.average?.total || '0.0'}</div>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-danger-600">{homeTeam.goals.against.total.total}</div>
+                  <div className="text-2xl font-bold text-danger-600">{homeTeam?.goals?.against?.total?.total || 0}</div>
                   <div className="text-sm text-gray-600">Goals Against</div>
-                  <div className="text-xs text-gray-500">Avg: {homeTeam.goals.against.average.total}</div>
+                  <div className="text-xs text-gray-500">Avg: {homeTeam?.goals?.against?.average?.total || '0.0'}</div>
                 </div>
                 <div></div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-danger-600">{awayTeam.goals.against.total.total}</div>
+                  <div className="text-2xl font-bold text-danger-600">{awayTeam?.goals?.against?.total?.total || 0}</div>
                   <div className="text-sm text-gray-600">Goals Against</div>
-                  <div className="text-xs text-gray-500">Avg: {awayTeam.goals.against.average.total}</div>
+                  <div className="text-xs text-gray-500">Avg: {awayTeam?.goals?.against?.average?.total || '0.0'}</div>
                 </div>
               </div>
             </div>
