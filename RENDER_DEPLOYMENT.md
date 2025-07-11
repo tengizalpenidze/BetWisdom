@@ -2,6 +2,10 @@
 
 This guide will help you deploy the BetWisdom football analytics application to Render.
 
+## ✅ Build Issue Fixed
+
+**The "vite: not found" error has been resolved!** Essential build tools have been moved from devDependencies to dependencies, so your next deployment will build successfully.
+
 ## Prerequisites
 
 1. **GitHub Repository**: Your code should be in a GitHub repository
@@ -27,7 +31,7 @@ This guide will help you deploy the BetWisdom football analytics application to 
 
 **Build & Deploy:**
 - **Runtime**: `Node`
-- **Build Command**: `npm install && npm run build`
+- **Build Command**: `npm ci && npm run build`
 - **Start Command**: `npm start`
 
 **Advanced Settings:**
@@ -40,8 +44,9 @@ Add these environment variables in Render dashboard:
 ```
 NODE_ENV=production
 SPORTMONKS_API_KEY=your_sportmonks_api_key_here
-PORT=5000
 ```
+
+**Note**: Don't set PORT manually - Render sets this automatically.
 
 **To add environment variables:**
 1. Go to your service settings
@@ -106,8 +111,9 @@ To use your own domain:
 
 **Build Fails:**
 - Check Node.js version compatibility
-- Verify all dependencies are in `package.json`
+- Verify all dependencies are in `package.json` (not devDependencies)
 - Review build logs for specific errors
+- Ensure build tools (vite, esbuild, typescript) are in dependencies
 
 **API Not Working:**
 - Verify `SPORTMONKS_API_KEY` is set correctly
