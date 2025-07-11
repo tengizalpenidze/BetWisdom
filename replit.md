@@ -11,15 +11,19 @@ API Key: Using Sportmonks API with key b7irXCpVJbP1f0aUdqqaTkdZ23ciP1CIyyQr2TxC1
 
 ## API Limitations Discovered (January 11, 2025)
 
-**Critical Issue**: Sportmonks free plan only provides:
+**Critical Issue**: Sportmonks free plan severely restricts available data:
 - Historical data from 2005-2016 (outdated)
-- Basic team information and league standings
+- Only ~50 basic teams available (mostly Scottish Premiership and Danish Superliga)
+- Major European teams (Napoli, PSG, Barcelona, Real Madrid, Manchester United, etc.) NOT available in free tier
 - NO current season match data, detailed statistics, goals, cards, or corners
-- NO comprehensive team performance data from recent matches
+- Search functionality returns same limited team set regardless of search terms
+- League filtering ineffective due to data restrictions
 
-**User Request**: Comprehensive statistics for each team from ALL their season matches including goals, cards, corners, and detailed match history.
+**User Request**: Teams from major European leagues (Serie A, La Liga, Premier League, etc.) with comprehensive statistics.
 
-**Current Status**: Cannot fulfill user requirement with free Sportmonks plan.
+**Current Status**: Cannot provide major league teams or comprehensive statistics with free Sportmonks plan. Available teams limited to Celtic, Rangers, Hibernian, FC København, and similar lower-tier teams.
+
+**Demonstrated Issue**: User correctly identified that Napoli (Serie A) and PSG (Ligue 1) are not findable in the current system due to API plan limitations.
 
 ## System Architecture
 

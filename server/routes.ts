@@ -288,53 +288,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get teams from major European leagues
+  // Get teams available in Sportmonks free plan
   app.get("/api/teams", async (req, res) => {
     try {
-      // Major European leagues with known IDs from Sportmonks (available even in free plan)
-      const majorLeagues = [
-        { id: 501, name: "Scottish Premiership" },
-        { id: 8, name: "Premier League" },
-        { id: 384, name: "La Liga" },
-        { id: 301, name: "Serie A" },
-        { id: 399, name: "Bundesliga" },
-        { id: 493, name: "Ligue 1" },
-        { id: 564, name: "Eredivisie" },
-        { id: 271, name: "Danish Superliga" },
-        { id: 218, name: "Belgian Pro League" }
-      ];
-
-      // Try to fetch teams from multiple leagues (some may fail on free plan)
-      const promises = majorLeagues.map(async league => {
-        try {
-          const data = await callSportmonks("/teams", {
-            filters: `leagueIds:${league.id}`,
-            per_page: "15"
-          });
-          
-          // Add league info to each team
-          const teamsWithLeague = (data.data || []).map((team: any) => ({
-            ...team,
-            leagueName: league.name,
-            leagueId: league.id
-          }));
-          
-          return { leagueName: league.name, teams: teamsWithLeague };
-        } catch (error) {
-          console.log(`Failed to fetch teams from ${league.name}:`, error);
-          return { leagueName: league.name, teams: [] };
+      // NOTE: Sportmonks free plan has severe limitations
+      // Only provides basic teams (mostly Scottish/Danish) regardless of league filters
+      // Major European teams (Napoli, PSG, Barcelona, etc.) are not available in free tier
+      
+      const data = await callSportmonks("/teams", {
+        per_page: "50"
+      });
+      
+      // Add realistic league information based on team location/country
+      // Even though API limitations prevent us from getting actual league data
+      const teamsWithLeagues = (data.data || []).map((team: any) => {
+        let leagueName = "European League";
+        
+        // Map teams to leagues based on name patterns (best effort with limited data)
+        if (team.name.includes("Celtic") || team.name.includes("Rangers") || team.name.includes("Hibernian")) {
+          leagueName = "Scottish Premiership";
+        } else if (team.name.includes("København") || team.name.includes("Silkeborg") || team.name.includes("AGF")) {
+          leagueName = "Danish Superliga";
+        } else if (team.country_id === 1161) {
+          leagueName = "Scottish Premiership";
+        } else if (team.country_id === 320) {
+          leagueName = "Danish Superliga";
         }
+        
+        return {
+          ...team,
+          leagueName,
+          leagueId: team.country_id
+        };
       });
 
-      const results = await Promise.all(promises);
-      
-      // Combine all teams from different leagues
-      const allTeams = results.reduce((acc, result) => {
-        return [...acc, ...result.teams];
-      }, []);
-
       // Sort teams by league and name
-      allTeams.sort((a, b) => {
+      teamsWithLeagues.sort((a, b) => {
         if (a.leagueName !== b.leagueName) {
           return a.leagueName.localeCompare(b.leagueName);
         }
@@ -342,16 +331,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const transformedData = {
-        data: allTeams,
-        results: allTeams.length,
-        response: allTeams,
-        leagues: results.map(r => ({ 
-          name: r.leagueName, 
-          teamCount: r.teams.length 
-        }))
+        data: teamsWithLeagues,
+        results: teamsWithLeagues.length,
+        response: teamsWithLeagues,
+        apiLimitation: {
+          message: "Free API plan limitations detected",
+          description: "Only basic European teams available. Major league teams (Napoli, PSG, Barcelona, etc.) require paid API plan.",
+          availableTeams: teamsWithLeagues.length,
+          note: "You can still analyze available teams for demonstration purposes"
+        }
       };
       
-      console.log(`Fetched ${allTeams.length} teams from ${results.filter(r => r.teams.length > 0).length} leagues`);
+      console.log(`Fetched ${teamsWithLeagues.length} teams (limited by free API plan)`);
       
       res.json(transformedData);
     } catch (error) {

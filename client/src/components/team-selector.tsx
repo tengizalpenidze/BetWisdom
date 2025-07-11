@@ -41,8 +41,21 @@ export function TeamSelector() {
           Select Teams to Analyze
         </CardTitle>
         <p className="text-sm text-gray-600">
-          Choose two teams from major European leagues to compare their statistics and get betting insights.
+          Choose two teams to compare their statistics and get betting insights.
         </p>
+        {teamsData?.apiLimitation && (
+          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <div className="w-4 h-4 text-yellow-600 mt-0.5">⚠️</div>
+              <div className="text-sm">
+                <div className="font-medium text-yellow-800">API Limitation Notice</div>
+                <div className="text-yellow-700 mt-1">
+                  {teamsData.apiLimitation.description}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {/* Search and Filter */}
@@ -50,7 +63,7 @@ export function TeamSelector() {
           <div className="relative">
             <Input 
               type="text" 
-              placeholder="Search teams from major European leagues..."
+              placeholder="Search available teams..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
