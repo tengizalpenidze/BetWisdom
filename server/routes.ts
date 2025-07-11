@@ -5,7 +5,7 @@ import { searchRequestSchema, matchAnalysisRequestSchema, apiFootballMatchSchema
 import { z } from "zod";
 
 const API_KEY = process.env.API_FOOTBALL_KEY || process.env.RAPID_API_KEY || "9f9f63cf6fc1f84236ef09a7ba2a8982";
-const API_BASE_URL = "https://api-football-v1.p.rapidapi.com/v3";
+const API_BASE_URL = "https://v3.football.api-sports.io";
 
 async function callApiFootball(endpoint: string, params: Record<string, string> = {}) {
   const url = new URL(`${API_BASE_URL}${endpoint}`);
@@ -16,8 +16,7 @@ async function callApiFootball(endpoint: string, params: Record<string, string> 
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
-      'X-RapidAPI-Key': API_KEY,
-      'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
+      'x-apisports-key': API_KEY
     }
   });
 
@@ -50,9 +49,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case "matches":
         default:
           endpoint = "/fixtures";
+          // For free plan, use available date range
           params = { 
-            search: query,
-            next: "50" // Get upcoming matches
+            date: "2025-07-11", // Available date for free plan
+            league: "39" // Premier League for free plan
           };
           break;
       }
@@ -68,13 +68,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get upcoming matches for popular leagues
+  // Get upcoming matches for popular leagues (Free plan compatible)
   app.get("/api/matches/upcoming", async (req, res) => {
     try {
+      // Free plan has very limited date access, so let's use current season data from Premier League
+      const currentSeason = new Date().getFullYear();
+      
+      // Get Premier League fixtures for the available date range
       const data = await callApiFootball("/fixtures", {
-        next: "20",
-        league: "39,140,78,61,135" // Premier League, La Liga, Bundesliga, Ligue 1, Serie A
+        date: "2025-07-11", // Use available date from free plan
+        league: "39" // Premier League
       });
+      
       res.json(data);
     } catch (error) {
       console.error("Upcoming matches error:", error);

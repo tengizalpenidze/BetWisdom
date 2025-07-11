@@ -18,12 +18,10 @@ export function Header() {
             <span className="text-sm text-gray-500 hidden sm:block">Smart Football Analytics</span>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/">
-              <a className={`font-medium transition-colors ${
-                location === "/" ? "text-primary" : "text-gray-700 hover:text-primary"
-              }`}>
-                Matches
-              </a>
+            <Link href="/" className={`font-medium transition-colors ${
+              location === "/" ? "text-primary" : "text-gray-700 hover:text-primary"
+            }`}>
+              Matches
             </Link>
             <a href="#" className="text-gray-700 hover:text-primary font-medium transition-colors">Teams</a>
             <a href="#" className="text-gray-700 hover:text-primary font-medium transition-colors">Statistics</a>

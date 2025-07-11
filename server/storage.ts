@@ -51,7 +51,14 @@ export class MemStorage implements IStorage {
 
   async createTeam(insertTeam: InsertTeam): Promise<Team> {
     const id = this.currentTeamId++;
-    const team: Team = { ...insertTeam, id };
+    const team: Team = { 
+      ...insertTeam,
+      id,
+      logo: insertTeam.logo ?? null,
+      country: insertTeam.country ?? null,
+      founded: insertTeam.founded ?? null,
+      venue: insertTeam.venue ?? null
+    };
     this.teams.set(id, team);
     return team;
   }
@@ -66,7 +73,14 @@ export class MemStorage implements IStorage {
 
   async createMatch(insertMatch: InsertMatch): Promise<Match> {
     const id = this.currentMatchId++;
-    const match: Match = { ...insertMatch, id };
+    const match: Match = { 
+      ...insertMatch,
+      id,
+      homeTeamId: insertMatch.homeTeamId ?? null,
+      awayTeamId: insertMatch.awayTeamId ?? null,
+      venue: insertMatch.venue ?? null,
+      leagueCountry: insertMatch.leagueCountry ?? null
+    };
     this.matches.set(id, match);
     return match;
   }
@@ -93,6 +107,7 @@ export class MemStorage implements IStorage {
       const stats: TeamStats = {
         ...insertStats,
         id,
+        teamId: insertStats.teamId ?? null,
         lastUpdated: new Date(),
       };
       this.teamStats.set(key, stats);
@@ -120,6 +135,10 @@ export class MemStorage implements IStorage {
       const stats: MatchStats = {
         ...insertStats,
         id,
+        matchId: insertStats.matchId ?? null,
+        homeTeamStats: insertStats.homeTeamStats || null,
+        awayTeamStats: insertStats.awayTeamStats || null,
+        h2hStats: insertStats.h2hStats || null,
         lastUpdated: new Date(),
       };
       this.matchStats.set(insertStats.matchId!, stats);
