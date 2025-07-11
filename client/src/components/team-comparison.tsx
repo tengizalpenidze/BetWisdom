@@ -225,29 +225,102 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
               </div>
             )}
 
-            {/* Team Performance Comparison */}
+            {/* Comprehensive Team Statistics */}
             <div>
-              <h5 className="text-lg font-semibold text-gray-900 mb-4">Current Season Performance</h5>
+              <h5 className="text-lg font-semibold text-gray-900 mb-4">Team Statistics (Last 20 Matches)</h5>
               <div className="grid grid-cols-2 gap-6">
                 {/* Home Team Stats */}
                 <div className="bg-blue-50 rounded-lg p-4">
                   <h6 className="font-semibold text-blue-800 mb-3">{homeTeam?.name || 'Home Team'}</h6>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">League Position:</span>
-                      <span className="font-medium">{homeTeam?.standing?.position || 'N/A'}</span>
+                  <div className="space-y-3">
+                    {/* Current Form */}
+                    <div>
+                      <span className="text-sm text-gray-600">Recent Form:</span>
+                      <div className="flex mt-1 space-x-1">
+                        {homeTeam?.statistics?.form?.slice(0, 5).map((result: string, index: number) => (
+                          <div
+                            key={index}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                              result === 'W' ? 'bg-green-500' :
+                              result === 'L' ? 'bg-red-500' : 'bg-gray-400'
+                            }`}
+                          >
+                            {result}
+                          </div>
+                        )) || <span className="text-gray-400 text-sm">No recent matches</span>}
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Points:</span>
-                      <span className="font-medium">{homeTeam?.standing?.points || 'N/A'}</span>
+
+                    {/* Match Statistics */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Matches:</span>
+                        <span className="font-medium">{homeTeam?.statistics?.matchesPlayed || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Win %:</span>
+                        <span className="font-medium">{homeTeam?.statistics?.winPercentage || 0}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Wins:</span>
+                        <span className="font-medium text-green-600">{homeTeam?.statistics?.wins || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Losses:</span>
+                        <span className="font-medium text-red-600">{homeTeam?.statistics?.losses || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Draws:</span>
+                        <span className="font-medium text-gray-600">{homeTeam?.statistics?.draws || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Goal Diff:</span>
+                        <span className={`font-medium ${(homeTeam?.statistics?.goalDifference || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(homeTeam?.statistics?.goalDifference || 0) >= 0 ? '+' : ''}{homeTeam?.statistics?.goalDifference || 0}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Founded:</span>
-                      <span className="font-medium">{homeTeam?.founded || 'N/A'}</span>
+
+                    {/* Goals Statistics */}
+                    <div className="border-t pt-3">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Goals For:</span>
+                          <span className="font-medium">{homeTeam?.statistics?.goalsFor || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Goals Against:</span>
+                          <span className="font-medium">{homeTeam?.statistics?.goalsAgainst || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Avg Goals/Game:</span>
+                          <span className="font-medium">{homeTeam?.statistics?.averageGoalsFor || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Avg Conceded:</span>
+                          <span className="font-medium">{homeTeam?.statistics?.averageGoalsAgainst || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Clean Sheets:</span>
+                          <span className="font-medium">{homeTeam?.statistics?.cleanSheets || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Failed to Score:</span>
+                          <span className="font-medium">{homeTeam?.statistics?.failedToScore || 0}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Sport:</span>
-                      <span className="font-medium">{homeTeam?.sport_id === 1 ? 'Football' : 'Unknown'}</span>
+
+                    {/* League Position */}
+                    <div className="border-t pt-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">League Position:</span>
+                        <span className="font-medium">{homeTeam?.standing?.position || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">League Points:</span>
+                        <span className="font-medium">{homeTeam?.standing?.points || 'N/A'}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -255,22 +328,95 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
                 {/* Away Team Stats */}
                 <div className="bg-red-50 rounded-lg p-4">
                   <h6 className="font-semibold text-red-800 mb-3">{awayTeam?.name || 'Away Team'}</h6>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">League Position:</span>
-                      <span className="font-medium">{awayTeam?.standing?.position || 'N/A'}</span>
+                  <div className="space-y-3">
+                    {/* Current Form */}
+                    <div>
+                      <span className="text-sm text-gray-600">Recent Form:</span>
+                      <div className="flex mt-1 space-x-1">
+                        {awayTeam?.statistics?.form?.slice(0, 5).map((result: string, index: number) => (
+                          <div
+                            key={index}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                              result === 'W' ? 'bg-green-500' :
+                              result === 'L' ? 'bg-red-500' : 'bg-gray-400'
+                            }`}
+                          >
+                            {result}
+                          </div>
+                        )) || <span className="text-gray-400 text-sm">No recent matches</span>}
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Points:</span>
-                      <span className="font-medium">{awayTeam?.standing?.points || 'N/A'}</span>
+
+                    {/* Match Statistics */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Matches:</span>
+                        <span className="font-medium">{awayTeam?.statistics?.matchesPlayed || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Win %:</span>
+                        <span className="font-medium">{awayTeam?.statistics?.winPercentage || 0}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Wins:</span>
+                        <span className="font-medium text-green-600">{awayTeam?.statistics?.wins || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Losses:</span>
+                        <span className="font-medium text-red-600">{awayTeam?.statistics?.losses || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Draws:</span>
+                        <span className="font-medium text-gray-600">{awayTeam?.statistics?.draws || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Goal Diff:</span>
+                        <span className={`font-medium ${(awayTeam?.statistics?.goalDifference || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(awayTeam?.statistics?.goalDifference || 0) >= 0 ? '+' : ''}{awayTeam?.statistics?.goalDifference || 0}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Founded:</span>
-                      <span className="font-medium">{awayTeam?.founded || 'N/A'}</span>
+
+                    {/* Goals Statistics */}
+                    <div className="border-t pt-3">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Goals For:</span>
+                          <span className="font-medium">{awayTeam?.statistics?.goalsFor || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Goals Against:</span>
+                          <span className="font-medium">{awayTeam?.statistics?.goalsAgainst || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Avg Goals/Game:</span>
+                          <span className="font-medium">{awayTeam?.statistics?.averageGoalsFor || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Avg Conceded:</span>
+                          <span className="font-medium">{awayTeam?.statistics?.averageGoalsAgainst || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Clean Sheets:</span>
+                          <span className="font-medium">{awayTeam?.statistics?.cleanSheets || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Failed to Score:</span>
+                          <span className="font-medium">{awayTeam?.statistics?.failedToScore || 0}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Sport:</span>
-                      <span className="font-medium">{awayTeam?.sport_id === 1 ? 'Football' : 'Unknown'}</span>
+
+                    {/* League Position */}
+                    <div className="border-t pt-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">League Position:</span>
+                        <span className="font-medium">{awayTeam?.standing?.position || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">League Points:</span>
+                        <span className="font-medium">{awayTeam?.standing?.points || 'N/A'}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
