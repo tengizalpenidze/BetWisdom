@@ -3,14 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Shield, Users } from "lucide-react";
+import { Search, Shield, Users, Filter } from "lucide-react";
 import { Link } from "wouter";
 import { getTeams } from "@/lib/api";
 import type { TeamData, SportmonksTeam } from "@/lib/api";
 
 export function TeamSelector() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLeague, setSelectedLeague] = useState("all");
   const [selectedHomeTeam, setSelectedHomeTeam] = useState<SportmonksTeam | null>(null);
   const [selectedAwayTeam, setSelectedAwayTeam] = useState<SportmonksTeam | null>(null);
 
@@ -21,9 +23,13 @@ export function TeamSelector() {
   });
 
   const teams = (teamsData?.response || teamsData?.data || []) as SportmonksTeam[];
-  const filteredTeams = teams.filter((teamData: SportmonksTeam) =>
-    teamData.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
-  );
+  const availableLeagues = [...new Set(teams.map((team: any) => team.leagueName).filter(Boolean))].sort();
+  
+  const filteredTeams = teams.filter((teamData: SportmonksTeam) => {
+    const matchesSearch = teamData.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
+    const matchesLeague = selectedLeague === "all" || (teamData as any).leagueName === selectedLeague;
+    return matchesSearch && matchesLeague;
+  });
 
   const canAnalyze = selectedHomeTeam && selectedAwayTeam && selectedHomeTeam.id !== selectedAwayTeam.id;
 
@@ -35,22 +41,44 @@ export function TeamSelector() {
           Select Teams to Analyze
         </CardTitle>
         <p className="text-sm text-gray-600">
-          Choose two Premier League teams to compare their 2022 season statistics and get betting insights.
+          Choose two teams from major European leagues to compare their statistics and get betting insights.
         </p>
       </CardHeader>
       <CardContent>
-        {/* Search Bar */}
-        <div className="mb-6">
+        {/* Search and Filter */}
+        <div className="mb-6 space-y-4">
           <div className="relative">
             <Input 
               type="text" 
-              placeholder="Search Premier League teams..."
+              placeholder="Search teams from major European leagues..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           </div>
+          
+          {availableLeagues.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <Filter className="text-gray-400 w-4 h-4" />
+              <Select value={selectedLeague} onValueChange={setSelectedLeague}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by league" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Leagues</SelectItem>
+                  {availableLeagues.map((league) => (
+                    <SelectItem key={league} value={league}>
+                      {league}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-gray-500">
+                {filteredTeams.length} teams
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Selected Teams */}
@@ -166,9 +194,14 @@ export function TeamSelector() {
                       <Shield className="text-gray-400 w-6 h-6" />
                     </div>
                   )}
-                  <div>
+                  <div className="flex-1">
                     <div className="font-medium text-gray-900">{teamData.name}</div>
-                    <div className="text-sm text-gray-500">{teamData.venue?.name || 'Unknown venue'}</div>
+                    <div className="text-sm text-gray-500">
+                      {(teamData as any).leagueName || 'European League'}
+                    </div>
+                    {teamData.venue?.name && (
+                      <div className="text-xs text-gray-400">{teamData.venue.name}</div>
+                    )}
                   </div>
                 </div>
               </div>

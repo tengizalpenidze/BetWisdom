@@ -288,21 +288,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get teams for team selection (using popular teams from Sportmonks)
+  // Get teams from major European leagues
   app.get("/api/teams", async (req, res) => {
     try {
-      const data = await callSportmonks("/teams", {
-        per_page: "20",
-        include: "venue"
+      // Major European leagues with known IDs from Sportmonks (available even in free plan)
+      const majorLeagues = [
+        { id: 501, name: "Scottish Premiership" },
+        { id: 8, name: "Premier League" },
+        { id: 384, name: "La Liga" },
+        { id: 301, name: "Serie A" },
+        { id: 399, name: "Bundesliga" },
+        { id: 493, name: "Ligue 1" },
+        { id: 564, name: "Eredivisie" },
+        { id: 271, name: "Danish Superliga" },
+        { id: 218, name: "Belgian Pro League" }
+      ];
+
+      // Try to fetch teams from multiple leagues (some may fail on free plan)
+      const promises = majorLeagues.map(async league => {
+        try {
+          const data = await callSportmonks("/teams", {
+            filters: `leagueIds:${league.id}`,
+            per_page: "15"
+          });
+          
+          // Add league info to each team
+          const teamsWithLeague = (data.data || []).map((team: any) => ({
+            ...team,
+            leagueName: league.name,
+            leagueId: league.id
+          }));
+          
+          return { leagueName: league.name, teams: teamsWithLeague };
+        } catch (error) {
+          console.log(`Failed to fetch teams from ${league.name}:`, error);
+          return { leagueName: league.name, teams: [] };
+        }
       });
+
+      const results = await Promise.all(promises);
       
-      // Transform data to match expected format
+      // Combine all teams from different leagues
+      const allTeams = results.reduce((acc, result) => {
+        return [...acc, ...result.teams];
+      }, []);
+
+      // Sort teams by league and name
+      allTeams.sort((a, b) => {
+        if (a.leagueName !== b.leagueName) {
+          return a.leagueName.localeCompare(b.leagueName);
+        }
+        return a.name.localeCompare(b.name);
+      });
+
       const transformedData = {
-        data: data.data,
-        pagination: data.pagination,
-        results: data.data?.length || 0,
-        response: data.data || []
+        data: allTeams,
+        results: allTeams.length,
+        response: allTeams,
+        leagues: results.map(r => ({ 
+          name: r.leagueName, 
+          teamCount: r.teams.length 
+        }))
       };
+      
+      console.log(`Fetched ${allTeams.length} teams from ${results.filter(r => r.teams.length > 0).length} leagues`);
       
       res.json(transformedData);
     } catch (error) {
