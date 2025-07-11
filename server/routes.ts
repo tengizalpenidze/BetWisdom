@@ -4,11 +4,13 @@ import { storage } from "./storage";
 import { searchRequestSchema, matchAnalysisRequestSchema, apiFootballMatchSchema, apiFootballTeamSchema } from "@shared/schema";
 import { z } from "zod";
 
-const API_KEY = process.env.API_FOOTBALL_KEY || process.env.RAPID_API_KEY || "9f9f63cf6fc1f84236ef09a7ba2a8982";
-const API_BASE_URL = "https://v3.football.api-sports.io";
+const API_KEY = process.env.SPORTMONKS_API_KEY || "b7irXCpVJbP1f0aUdqqaTkdZ23ciP1CIyyQr2TxC1J3PSTFfIU9l0dCV5FBS";
+const API_BASE_URL = "https://api.sportmonks.com/v3/football";
 
-async function callApiFootball(endpoint: string, params: Record<string, string> = {}) {
+async function callSportmonks(endpoint: string, params: Record<string, string> = {}) {
   const url = new URL(`${API_BASE_URL}${endpoint}`);
+  url.searchParams.append('api_token', API_KEY);
+  
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);
   });
@@ -16,19 +18,20 @@ async function callApiFootball(endpoint: string, params: Record<string, string> 
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
-      'x-apisports-key': API_KEY
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
     }
   });
 
   if (!response.ok) {
-    throw new Error(`API-Football error: ${response.status} ${response.statusText}`);
+    throw new Error(`Sportmonks API error: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
   
   // Log errors if any
   if (data.errors && data.errors.length > 0) {
-    console.log(`API Errors for ${endpoint}:`, data.errors);
+    console.log(`Sportmonks API Errors for ${endpoint}:`, data.errors);
   }
   
   return data;
@@ -67,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
       }
 
-      const data = await callApiFootball(endpoint, params);
+      const data = await callSportmonks(endpoint, params);
       res.json(data);
     } catch (error) {
       console.error("Search error:", error);
@@ -104,46 +107,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { homeTeamId, awayTeamId, season = 2022 } = matchAnalysisRequestSchema.parse(req.body);
 
-      // Fetch team statistics
-      const [homeTeamStats, awayTeamStats, h2hData] = await Promise.all([
-        callApiFootball("/teams/statistics", {
-          team: homeTeamId.toString(),
-          season: season.toString(),
-          league: "39" // Default to Premier League, should be dynamic
+      // Fetch team statistics and head-to-head data using Sportmonks API
+      const [homeTeamData, awayTeamData, h2hData] = await Promise.all([
+        callSportmonks(`/teams/${homeTeamId}`, {
+          include: "statistics"
         }),
-        callApiFootball("/teams/statistics", {
-          team: awayTeamId.toString(),
-          season: season.toString(),
-          league: "39"
+        callSportmonks(`/teams/${awayTeamId}`, {
+          include: "statistics"
         }),
-        callApiFootball("/fixtures/headtohead", {
-          h2h: `${homeTeamId}-${awayTeamId}`
+        callSportmonks(`/fixtures/head-to-head/${homeTeamId}/${awayTeamId}`, {
+          include: "scores,participants,statistics"
         })
       ]);
 
-      // Store in local storage for caching
-      if (homeTeamStats.response) {
+      // Store in local storage for caching (adapt for Sportmonks data structure)
+      if (homeTeamData.data) {
         await storage.createOrUpdateTeamStats({
           teamId: homeTeamId,
           season,
-          leagueId: 39,
-          stats: homeTeamStats.response
+          leagueId: 501, // Premier League ID in Sportmonks
+          stats: homeTeamData.data
         });
       }
 
-      if (awayTeamStats.response) {
+      if (awayTeamData.data) {
         await storage.createOrUpdateTeamStats({
           teamId: awayTeamId,
           season,
-          leagueId: 39,
-          stats: awayTeamStats.response
+          leagueId: 501,
+          stats: awayTeamData.data
         });
       }
 
       res.json({
-        homeTeam: homeTeamStats.response || null,
-        awayTeam: awayTeamStats.response || null,
-        headToHead: h2hData.response || []
+        homeTeam: homeTeamData.data || null,
+        awayTeam: awayTeamData.data || null,
+        headToHead: h2hData.data || []
       });
     } catch (error) {
       console.error("Analysis error:", error);
@@ -162,23 +161,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid team ID" });
       }
 
-      const data = await callApiFootball("/teams", {
-        id: teamId.toString()
-      });
+      const data = await callSportmonks(`/teams/${teamId}`, {});
 
-      // Store team data locally
-      if (data.response?.[0]) {
-        const teamData = data.response[0];
-        const existingTeam = await storage.getTeamByApiId(teamData.team.id);
+      // Store team data locally (adapted for Sportmonks structure)
+      if (data.data) {
+        const teamData = data.data;
+        const existingTeam = await storage.getTeamByApiId(teamData.id);
         
         if (!existingTeam) {
           await storage.createTeam({
-            apiId: teamData.team.id,
-            name: teamData.team.name,
-            logo: teamData.team.logo,
-            country: teamData.team.country,
-            founded: teamData.team.founded,
-            venue: teamData.venue?.name
+            apiId: teamData.id,
+            name: teamData.name,
+            logo: teamData.image_path || '',
+            country: teamData.country?.name || '',
+            founded: teamData.founded || 0,
+            venue: teamData.venue?.name || ''
           });
         }
       }
@@ -201,8 +198,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid match ID" });
       }
 
-      const data = await callApiFootball("/fixtures", {
-        id: matchId.toString()
+      const data = await callSportmonks(`/fixtures/${matchId}`, {
+        include: "scores,participants,statistics"
       });
 
       res.json(data);
@@ -215,14 +212,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get Premier League teams for team selection
+  // Get teams for team selection (using popular teams from Sportmonks)
   app.get("/api/teams", async (req, res) => {
     try {
-      const data = await callApiFootball("/teams", {
-        league: "39", // Premier League
-        season: "2022"
+      const data = await callSportmonks("/teams", {
+        per_page: "20",
+        include: "venue"
       });
-      res.json(data);
+      
+      // Transform data to match expected format
+      const transformedData = {
+        data: data.data,
+        pagination: data.pagination,
+        results: data.data?.length || 0,
+        response: data.data || []
+      };
+      
+      res.json(transformedData);
     } catch (error) {
       console.error("Teams fetch error:", error);
       res.status(500).json({ 

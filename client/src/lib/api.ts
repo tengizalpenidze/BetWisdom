@@ -12,6 +12,24 @@ export interface ApiFootballResponse<T> {
   response: T[];
 }
 
+export interface SportmonksResponse<T> {
+  data: T[];
+  pagination?: {
+    count: number;
+    per_page: number;
+    current_page: number;
+    next_page: string | null;
+    has_more: boolean;
+  };
+  subscription?: any[];
+  rate_limit?: {
+    resets_in_seconds: number;
+    remaining: number;
+    requested_entity: string;
+  };
+  timezone?: string;
+}
+
 export interface TeamData {
   team: {
     id: number;
@@ -30,6 +48,30 @@ export interface TeamData {
     capacity: number;
     surface: string;
     image: string;
+  };
+}
+
+export interface SportmonksTeam {
+  id: number;
+  sport_id: number;
+  country_id: number;
+  venue_id: number;
+  gender: string;
+  name: string;
+  short_code: string;
+  image_path: string;
+  founded: number;
+  type: string;
+  placeholder: boolean;
+  last_played_at: string;
+  venue?: {
+    id: number;
+    name: string;
+    address?: string;
+    city?: string;
+    capacity?: number;
+    surface?: string;
+    image?: string;
   };
 }
 

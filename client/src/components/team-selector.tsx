@@ -7,12 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Shield, Users } from "lucide-react";
 import { Link } from "wouter";
 import { getTeams } from "@/lib/api";
-import type { TeamData } from "@/lib/api";
+import type { TeamData, SportmonksTeam } from "@/lib/api";
 
 export function TeamSelector() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedHomeTeam, setSelectedHomeTeam] = useState<TeamData | null>(null);
-  const [selectedAwayTeam, setSelectedAwayTeam] = useState<TeamData | null>(null);
+  const [selectedHomeTeam, setSelectedHomeTeam] = useState<SportmonksTeam | null>(null);
+  const [selectedAwayTeam, setSelectedAwayTeam] = useState<SportmonksTeam | null>(null);
 
   const { data: teamsData, isLoading, error } = useQuery({
     queryKey: ["/api/teams"],
@@ -20,12 +20,12 @@ export function TeamSelector() {
     retry: 1,
   });
 
-  const teams = teamsData?.response || [];
-  const filteredTeams = teams.filter(teamData =>
-    teamData.team.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const teams = (teamsData?.response || teamsData?.data || []) as SportmonksTeam[];
+  const filteredTeams = teams.filter((teamData: SportmonksTeam) =>
+    teamData.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
   );
 
-  const canAnalyze = selectedHomeTeam && selectedAwayTeam && selectedHomeTeam.team.id !== selectedAwayTeam.team.id;
+  const canAnalyze = selectedHomeTeam && selectedAwayTeam && selectedHomeTeam.id !== selectedAwayTeam.id;
 
   return (
     <Card>
@@ -63,11 +63,11 @@ export function TeamSelector() {
                 {selectedHomeTeam ? (
                   <div className="flex items-center justify-center space-x-2">
                     <img 
-                      src={selectedHomeTeam.team.logo} 
-                      alt={selectedHomeTeam.team.name}
+                      src={selectedHomeTeam.image_path} 
+                      alt={selectedHomeTeam.name}
                       className="w-8 h-8"
                     />
-                    <span className="font-medium">{selectedHomeTeam.team.name}</span>
+                    <span className="font-medium">{selectedHomeTeam.name}</span>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -85,11 +85,11 @@ export function TeamSelector() {
                 {selectedAwayTeam ? (
                   <div className="flex items-center justify-center space-x-2">
                     <img 
-                      src={selectedAwayTeam.team.logo} 
-                      alt={selectedAwayTeam.team.name}
+                      src={selectedAwayTeam.image_path} 
+                      alt={selectedAwayTeam.name}
                       className="w-8 h-8"
                     />
-                    <span className="font-medium">{selectedAwayTeam.team.name}</span>
+                    <span className="font-medium">{selectedAwayTeam.name}</span>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -105,7 +105,7 @@ export function TeamSelector() {
             </div>
             {canAnalyze && (
               <div className="text-center mt-4">
-                <Link href={`/analyze/${selectedHomeTeam.team.id}/${selectedAwayTeam.team.id}`}>
+                <Link href={`/analyze/${selectedHomeTeam.id}/${selectedAwayTeam.id}`}>
                   <Button className="bg-primary hover:bg-primary/90">
                     Analyze Teams
                   </Button>
@@ -138,14 +138,14 @@ export function TeamSelector() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTeams.map((teamData) => (
+            {filteredTeams.map((teamData: SportmonksTeam) => (
               <div
-                key={teamData.team.id}
+                key={teamData.id}
                 className="p-4 border rounded-lg hover:border-primary/30 cursor-pointer transition-all hover:shadow-md"
                 onClick={() => {
                   if (!selectedHomeTeam) {
                     setSelectedHomeTeam(teamData);
-                  } else if (!selectedAwayTeam && teamData.team.id !== selectedHomeTeam.team.id) {
+                  } else if (!selectedAwayTeam && teamData.id !== selectedHomeTeam.id) {
                     setSelectedAwayTeam(teamData);
                   } else if (selectedHomeTeam && selectedAwayTeam) {
                     // Replace one of the teams
@@ -155,10 +155,10 @@ export function TeamSelector() {
                 }}
               >
                 <div className="flex items-center space-x-3">
-                  {teamData.team.logo ? (
+                  {teamData.image_path ? (
                     <img 
-                      src={teamData.team.logo} 
-                      alt={teamData.team.name}
+                      src={teamData.image_path} 
+                      alt={teamData.name}
                       className="w-12 h-12 object-contain"
                     />
                   ) : (
@@ -167,8 +167,8 @@ export function TeamSelector() {
                     </div>
                   )}
                   <div>
-                    <div className="font-medium text-gray-900">{teamData.team.name}</div>
-                    <div className="text-sm text-gray-500">{teamData.venue.name}</div>
+                    <div className="font-medium text-gray-900">{teamData.name}</div>
+                    <div className="text-sm text-gray-500">{teamData.venue?.name || 'Unknown venue'}</div>
                   </div>
                 </div>
               </div>
