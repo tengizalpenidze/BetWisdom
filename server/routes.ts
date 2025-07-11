@@ -107,13 +107,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { homeTeamId, awayTeamId, season = 2022 } = matchAnalysisRequestSchema.parse(req.body);
 
-      // Fetch team and standings data using Sportmonks API 
-      const [homeTeamData, awayTeamData, standingsData] = await Promise.all([
+      // Fetch team data, standings, and recent fixtures for both teams
+      const [homeTeamData, awayTeamData, standingsData, homeFixtures, awayFixtures] = await Promise.all([
         callSportmonks(`/teams/${homeTeamId}`),
         callSportmonks(`/teams/${awayTeamId}`),
         callSportmonks(`/standings`, {
           filters: `leagueIds:501`
-        })
+        }),
+        callSportmonks(`/fixtures`, {
+          filters: `teamIds:${homeTeamId}`,
+          sort: `-starting_at`
+        }).catch(() => ({ data: [] })),
+        callSportmonks(`/fixtures`, {
+          filters: `teamIds:${awayTeamId}`,
+          sort: `-starting_at`
+        }).catch(() => ({ data: [] }))
       ]);
 
       // Store in local storage for caching (adapt for Sportmonks data structure)
@@ -142,11 +150,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         homeTeam: {
           ...homeTeamData.data || null,
-          standing: homeTeamStanding || null
+          standing: homeTeamStanding || null,
+          recentFixtures: homeFixtures?.data?.slice(0, 5) || []
         },
         awayTeam: {
           ...awayTeamData.data || null,
-          standing: awayTeamStanding || null
+          standing: awayTeamStanding || null,
+          recentFixtures: awayFixtures?.data?.slice(0, 5) || []
         },
         headToHead: [], // Temporarily disabled due to API endpoint limitations
         leagueStandings: standingsData?.data?.filter(s => 

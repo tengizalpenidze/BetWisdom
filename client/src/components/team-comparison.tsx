@@ -225,20 +225,165 @@ export function TeamComparison({ analysis }: TeamComparisonProps) {
               </div>
             )}
 
-            {/* Enhanced Statistics Available */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-start">
-                <Award className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
-                <div>
-                  <h6 className="font-semibold text-green-800 mb-1">Enhanced Data Available</h6>
-                  <p className="text-sm text-green-700">
-                    Using Sportmonks API to provide detailed match information including scores, participants, 
-                    and match statistics. More detailed team statistics available with enhanced API access.
-                  </p>
+            {/* Team Performance Comparison */}
+            <div>
+              <h5 className="text-lg font-semibold text-gray-900 mb-4">Current Season Performance</h5>
+              <div className="grid grid-cols-2 gap-6">
+                {/* Home Team Stats */}
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h6 className="font-semibold text-blue-800 mb-3">{homeTeam?.name || 'Home Team'}</h6>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">League Position:</span>
+                      <span className="font-medium">{homeTeam?.standing?.position || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Points:</span>
+                      <span className="font-medium">{homeTeam?.standing?.points || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Founded:</span>
+                      <span className="font-medium">{homeTeam?.founded || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Sport:</span>
+                      <span className="font-medium">{homeTeam?.sport_id === 1 ? 'Football' : 'Unknown'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Away Team Stats */}
+                <div className="bg-red-50 rounded-lg p-4">
+                  <h6 className="font-semibold text-red-800 mb-3">{awayTeam?.name || 'Away Team'}</h6>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">League Position:</span>
+                      <span className="font-medium">{awayTeam?.standing?.position || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Points:</span>
+                      <span className="font-medium">{awayTeam?.standing?.points || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Founded:</span>
+                      <span className="font-medium">{awayTeam?.founded || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Sport:</span>
+                      <span className="font-medium">{awayTeam?.sport_id === 1 ? 'Football' : 'Unknown'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* League Position Comparison */}
+            {(homeTeam?.standing || awayTeam?.standing) && (
+              <div>
+                <h5 className="text-lg font-semibold text-gray-900 mb-4">League Position Comparison</h5>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{homeTeam?.standing?.position || '-'}</div>
+                      <div className="text-sm text-gray-600">{homeTeam?.name} Position</div>
+                      <div className="text-xs text-gray-500">{homeTeam?.standing?.points || 0} points</div>
+                    </div>
+                    <div className="flex-1 mx-4">
+                      <div className="h-2 bg-gray-200 rounded-full relative">
+                        {homeTeam?.standing?.position && awayTeam?.standing?.position && (
+                          <>
+                            <div 
+                              className="absolute top-0 left-0 h-2 bg-blue-500 rounded-full"
+                              style={{ width: `${Math.max(0, 100 - (homeTeam.standing.position / 12) * 100)}%` }}
+                            />
+                            <div 
+                              className="absolute top-0 right-0 h-2 bg-red-500 rounded-full"
+                              style={{ width: `${Math.max(0, 100 - (awayTeam.standing.position / 12) * 100)}%` }}
+                            />
+                          </>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 text-center mt-1">League Standing</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">{awayTeam?.standing?.position || '-'}</div>
+                      <div className="text-sm text-gray-600">{awayTeam?.name} Position</div>
+                      <div className="text-xs text-gray-500">{awayTeam?.standing?.points || 0} points</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Recent Form */}
+            <div>
+              <h5 className="text-lg font-semibold text-gray-900 mb-4">Recent Form</h5>
+              <div className="grid grid-cols-2 gap-6">
+                {/* Home Team Recent Matches */}
+                <div>
+                  <h6 className="font-medium text-blue-800 mb-3">{homeTeam?.name} - Last 5 Matches</h6>
+                  <div className="space-y-2">
+                    {homeTeam?.recentFixtures?.length > 0 ? (
+                      homeTeam.recentFixtures.slice(0, 5).map((fixture, index) => (
+                        <div key={fixture.id || index} className="bg-white border rounded-lg p-3">
+                          <div className="flex justify-between items-center">
+                            <div className="text-sm">
+                              <div className="font-medium">{fixture.name || 'Match'}</div>
+                              <div className="text-gray-500 text-xs">
+                                {fixture.starting_at ? new Date(fixture.starting_at).toLocaleDateString() : 'Date TBA'}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xs text-gray-500">
+                                {fixture.result_info || 'No result'}
+                              </div>
+                              <div className="text-xs font-medium">
+                                {fixture.state_id === 5 ? 'Finished' : 
+                                 fixture.state_id === 1 ? 'Scheduled' : 'In Progress'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500 italic">No recent matches available</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Away Team Recent Matches */}
+                <div>
+                  <h6 className="font-medium text-red-800 mb-3">{awayTeam?.name} - Last 5 Matches</h6>
+                  <div className="space-y-2">
+                    {awayTeam?.recentFixtures?.length > 0 ? (
+                      awayTeam.recentFixtures.slice(0, 5).map((fixture, index) => (
+                        <div key={fixture.id || index} className="bg-white border rounded-lg p-3">
+                          <div className="flex justify-between items-center">
+                            <div className="text-sm">
+                              <div className="font-medium">{fixture.name || 'Match'}</div>
+                              <div className="text-gray-500 text-xs">
+                                {fixture.starting_at ? new Date(fixture.starting_at).toLocaleDateString() : 'Date TBA'}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xs text-gray-500">
+                                {fixture.result_info || 'No result'}
+                              </div>
+                              <div className="text-xs font-medium">
+                                {fixture.state_id === 5 ? 'Finished' : 
+                                 fixture.state_id === 1 ? 'Scheduled' : 'In Progress'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500 italic">No recent matches available</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
 
           </div>
         </CardContent>
