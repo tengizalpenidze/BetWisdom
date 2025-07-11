@@ -7,7 +7,19 @@ This is a full-stack football analytics web application that provides match anal
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-API Key: Using Sportmonks API with key b7irXCpVJbP1f0aUdqqaTkdZ23ciP1CIyyQr2TxC1J3PSTFfIU9l0dCV5FBS (Free plan with limitations)
+API Key: Using Sportmonks API with key b7irXCpVJbP1f0aUdqqaTkdZ23ciP1CIyyQr2TxC1J3PSTFfIU9l0dCV5FBS (Free plan - MAJOR LIMITATIONS DISCOVERED)
+
+## API Limitations Discovered (January 11, 2025)
+
+**Critical Issue**: Sportmonks free plan only provides:
+- Historical data from 2005-2016 (outdated)
+- Basic team information and league standings
+- NO current season match data, detailed statistics, goals, cards, or corners
+- NO comprehensive team performance data from recent matches
+
+**User Request**: Comprehensive statistics for each team from ALL their season matches including goals, cards, corners, and detailed match history.
+
+**Current Status**: Cannot fulfill user requirement with free Sportmonks plan.
 
 ## System Architecture
 
