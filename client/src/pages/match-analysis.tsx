@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Link } from "wouter";
-import { Header } from "@/components/header";
 import { TeamComparison } from "@/components/team-comparison";
 import { analyzeMatch } from "@/lib/api";
 
@@ -24,36 +23,30 @@ export default function MatchAnalysis() {
 
   if (!homeId || !awayId) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-red-600 mb-4">
-                <AlertTriangle className="w-5 h-5" />
-                <h1 className="text-xl font-bold">Invalid Match Parameters</h1>
-              </div>
-              <p className="text-gray-600 mb-4">
-                The team IDs provided are invalid. Please select a match from the home page.
-              </p>
-              <Link href="/">
-                <Button>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Matches
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-600 mb-4">
+              <AlertTriangle className="w-5 h-5" />
+              <h1 className="text-xl font-bold">Invalid Match Parameters</h1>
+            </div>
+            <p className="text-gray-600 mb-4">
+              The team IDs provided are invalid. Please select a match from the home page.
+            </p>
+            <Link href="/">
+              <Button>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Matches
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link href="/">
             <Button variant="outline" size="sm">
@@ -111,6 +104,5 @@ export default function MatchAnalysis() {
           </Card>
         )}
       </div>
-    </div>
-  );
+    );
 }
